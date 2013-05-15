@@ -242,7 +242,7 @@ rs_job_drive(rs_job_t *job, rs_buffers_t *buf,
         if (result != RS_DONE  &&  result != RS_BLOCKED)
             return result;
 
-        if (out_cb) {
+        if (out_cb != NULL) {
             iores = (out_cb)(job, buf, out_opaque);
             if (iores != RS_DONE)
                 return iores;

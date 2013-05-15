@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.53)
 AC_INIT([librsync],[0.9.7])
-AC_REVISION([$Revision$])
+AC_REVISION([$Revision: 1.12 $])
 AC_COPYRIGHT([Copyright (C) 1999, 2000, 01, 02, 04 by Martin Pool <mbp@samba.org>])
 AC_CONFIG_SRCDIR([trace.c])
 AM_CONFIG_HEADER(config.h)

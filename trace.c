@@ -169,7 +169,7 @@ void
 rs_trace_stderr(int UNUSED(level), char const *msg)
 {
     /* NOTE NO TRAILING NUL */
-    write(STDERR_FILENO, msg, strlen(msg));
+    fputs(msg, stderr);
 }
 
 

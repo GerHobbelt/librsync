@@ -49,7 +49,27 @@
 extern "C" {
 #endif
 
+#ifdef WIN32
+#define INLINE __inline
+#ifdef LIBRSYNC_EXPORTS
+#define LIBRSYNC_API __declspec(dllexport)
+#else
+#define LIBRSYNC_API __declspec(dllimport)
+#endif
+#else
+
+/* When using clang, inline semantics are different; disable them. */
+#ifdef __clang__
+#define INLINE
+#else
+#define INLINE inline
+#endif
+
+#define LIBRSYNC_API
+#endif
+LIBRSYNC_API
 extern char const rs_librsync_version[];
+LIBRSYNC_API
 extern char const rs_licence_string[];
 
 
@@ -72,7 +92,6 @@ typedef enum {
 } rs_loglevel;
 
 
-
 /**
  * \typedef rs_trace_fn_t
  * \brief Callback to write out log messages.
@@ -81,17 +100,21 @@ typedef enum {
  */
 typedef void    rs_trace_fn_t(int level, char const *msg);
 
+LIBRSYNC_API
 void            rs_trace_set_level(rs_loglevel level);
 
 /** Set trace callback. */
+LIBRSYNC_API
 void            rs_trace_to(rs_trace_fn_t *);
 
 /** Default trace callback that writes to stderr.  Implements
  * ::rs_trace_fn_t, and may be passed to rs_trace_to(). */
+LIBRSYNC_API
 void            rs_trace_stderr(int level, char const *msg);
 
 /** Check whether the library was compiled with debugging trace
  * suport. */
+LIBRSYNC_API
 int             rs_supports_trace(void);
 
 
@@ -150,6 +173,7 @@ typedef enum {
 /**
  * Return an English description of a ::rs_result value.
  */
+LIBRSYNC_API
 char const *rs_strerror(rs_result r);
 
 
@@ -201,14 +225,18 @@ void            rs_mdfour_update(rs_mdfour_t * md, void const *,
 				 size_t n);
 void rs_mdfour_result(rs_mdfour_t * md, unsigned char *out);
 
+LIBRSYNC_API
 char *rs_format_stats(rs_stats_t const *, char *, size_t);
 
+LIBRSYNC_API
 int rs_log_stats(rs_stats_t const *stats);
 
 
 typedef struct rs_signature rs_signature_t;
 
+LIBRSYNC_API
 void rs_free_sumset(rs_signature_t *);
+LIBRSYNC_API
 void rs_sumset_dump(rs_signature_t const *);
 
 
@@ -304,6 +332,7 @@ typedef enum rs_work_options {
 } rs_work_options;
 
 
+LIBRSYNC_API
 rs_result       rs_job_iter(rs_job_t *, rs_buffers_t *);
 
 typedef rs_result rs_driven_cb(rs_job_t *job, rs_buffers_t *buf,
@@ -315,14 +344,18 @@ rs_result rs_job_drive(rs_job_t *job, rs_buffers_t *buf,
 
 const rs_stats_t * rs_job_statistics(rs_job_t *job);
 
+LIBRSYNC_API
 rs_result       rs_job_free(rs_job_t *);
 
 int             rs_accum_value(rs_job_t *, char *sum, size_t sum_len);
 
+LIBRSYNC_API
 rs_job_t *rs_sig_begin(size_t new_block_len, size_t strong_sum_len);
 
+LIBRSYNC_API
 rs_job_t *rs_delta_begin(rs_signature_t *);
 
+LIBRSYNC_API
 rs_job_t *rs_loadsig_begin(rs_signature_t **);
 
 /**
@@ -342,9 +375,11 @@ typedef rs_result rs_copy_cb(void *opaque, rs_long_t pos,
 
 
 
+LIBRSYNC_API
 rs_job_t *rs_patch_begin(rs_copy_cb *, void *copy_arg);
 
 
+LIBRSYNC_API
 rs_result rs_build_hash_table(rs_signature_t* sums);
 
 
@@ -355,8 +390,11 @@ rs_result rs_build_hash_table(rs_signature_t* sums);
  *
  * You probably only need to change these in testing.
  */
-extern int rs_inbuflen, rs_outbuflen;
+LIBRSYNC_API
+extern size_t rs_inbuflen, rs_outbuflen;
 
+LIBRSYNC_API
+extern int rs_roll_paranoia;
 
 /**
  * Calculate the MD4 sum of a file.
@@ -366,15 +404,20 @@ extern int rs_inbuflen, rs_outbuflen;
  */
 void rs_mdfour_file(FILE *in_file, char *result);
 
+LIBRSYNC_API
 rs_result rs_sig_file(FILE *old_file, FILE *sig_file,
                       size_t block_len, size_t strong_len, rs_stats_t *); 
 
+LIBRSYNC_API
 rs_result rs_loadsig_file(FILE *, rs_signature_t **, rs_stats_t *);
 
+LIBRSYNC_API
 rs_result rs_file_copy_cb(void *arg, rs_long_t pos, size_t *len, void **buf);
 
+LIBRSYNC_API
 rs_result rs_delta_file(rs_signature_t *, FILE *new_file, FILE *delta_file, rs_stats_t *);
 
+LIBRSYNC_API
 rs_result rs_patch_file(FILE *basis_file, FILE *delta_file, FILE *new_file, rs_stats_t *);
 #endif /* ! RSYNC_NO_STDIO_INTERFACE */
 

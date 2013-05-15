@@ -75,9 +75,9 @@ print TABLE <<EOT;
 #include <stdio.h>
 
 #include "librsync.h"
-#include <protocol.h>
-#include <command.h>
-#include <prototab.h>
+#include "protocol.h"
+#include "command.h"
+#include "prototab.h"
 
 /* This file defines an array mapping command IDs to the operation kind,
  * implied literal value, and length of the first and second parameters.

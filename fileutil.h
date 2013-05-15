@@ -20,5 +20,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+LIBRSYNC_API
 FILE * rs_file_open(char const *filename, char const * mode);
+LIBRSYNC_API
 int rs_file_close(FILE * file);
