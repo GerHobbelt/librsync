@@ -134,13 +134,13 @@
 #define PACKAGE_NAME "librsync"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "librsync 0.9.6"
+#define PACKAGE_STRING "librsync 0.9.7"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "librsync"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.9.6"
+#define PACKAGE_VERSION "0.9.7"
 
 /* Canonical GNU hostname */
 #define RS_CANONICAL_HOST "i686-pc-cygwin"
@@ -190,7 +190,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.9.6"
+#define VERSION "0.9.7"
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
