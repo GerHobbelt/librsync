@@ -188,7 +188,7 @@ copy4( /* @out@ */ unsigned char *out, uint32_t const x)
 /* We need this if there is a uint64 */
 /* --robert.weber@Colorado.edu	     */
 #ifdef HAVE_UINT64
-inline static void
+INLINE static void
 copy8( /* @out@ */ unsigned char *out, uint64_t const x)
 {
     out[0] = x;

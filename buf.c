@@ -61,6 +61,7 @@
 
 #ifdef WIN32
 #define fileno _fileno
+#define fseek _fseeki64
 #endif
 
 /**
