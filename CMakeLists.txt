@@ -123,15 +123,6 @@ if (PERL_FOUND)
   message (STATUS "PERL_EXECUTABLE  = ${PERL_EXECUTABLE}")
 endif (PERL_FOUND)
 
-# Find ZLIB
-find_package (ZLIB REQUIRED)
-if (ZLIB_FOUND)
-  message (STATUS "Found components for ZLIB")
-  message (STATUS "BZIP2_INCLUDE_DIR  = ${ZLIB_INCLUDE_DIR}")
-  message (STATUS "BZIP_LIBRARIES = ${ZLIB_LIBRARIES}")
-  include_directories(${ZLIB_INCLUDE_DIRS})
-endif (ZLIB_FOUND)
-
 # Doxygen doc generator
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
@@ -216,10 +207,6 @@ set(rsync_LIB_SRCS
     src/blake2b-ref.c)
 
 add_library(rsync SHARED ${rsync_LIB_SRCS})
-
-target_link_libraries(rsync
-   ${ZLIB_LIBRARIES}
-)
 
 set_target_properties(rsync PROPERTIES VERSION ${LIBRSYNC_VERSION}
         SOVERSION ${LIBRSYNC_MAJOR_VERSION})
