@@ -117,15 +117,6 @@ site_name(SITE_NAME)
 message (STATUS "PROJECT_NAME  = ${PROJECT_NAME}")
 message (STATUS "SITE_NAME  = ${SITE_NAME}")
 
-# Find BZIP
-find_package (BZip2 REQUIRED)
-if (BZIP2_FOUND)
-  message (STATUS "Found components for BZIP2")
-  message (STATUS "BZIP2_INCLUDE_DIR  = ${BZIP2_INCLUDE_DIR}")
-  message (STATUS "BZIP_LIBRARIES = ${BZIP2_LIBRARIES}")
-  include_directories(${BZIP2_INCLUDE_DIR})
-endif (BZIP2_FOUND)
-
 # Find Perl
 find_package (Perl REQUIRED)
 if (PERL_FOUND)
@@ -227,7 +218,6 @@ set(rsync_LIB_SRCS
 add_library(rsync SHARED ${rsync_LIB_SRCS})
 
 target_link_libraries(rsync
-   ${BZIP2_LIBRARIES}
    ${ZLIB_LIBRARIES}
 )
 
