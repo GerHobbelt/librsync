@@ -28,11 +28,11 @@ set(LIBRSYNC_VERSION
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 if (NOT CMAKE_SYSTEM_PROCESSOR)
-	message(FATAL_ERROR "No target CPU architecture set")
+  message(FATAL_ERROR "No target CPU architecture set")
 endif()
 
 if (NOT CMAKE_SYSTEM_NAME)
-	message(FATAL_ERROR "No target OS set")
+  message(FATAL_ERROR "No target OS set")
 endif()
 
 include ( CheckIncludeFiles )
@@ -116,12 +116,6 @@ site_name(SITE_NAME)
 
 message (STATUS "PROJECT_NAME  = ${PROJECT_NAME}")
 message (STATUS "SITE_NAME  = ${SITE_NAME}")
-
-# Find POPT
-find_package(POPT REQUIRED)
-if ( POPT_FOUND )
-  include_directories(${POPT_INCLUDE_DIRS})
-endif ( POPT_FOUND )
 
 # Find BZIP
 find_package (BZip2 REQUIRED)
@@ -240,19 +234,6 @@ target_link_libraries(rsync
 set_target_properties(rsync PROPERTIES VERSION ${LIBRSYNC_VERSION}
         SOVERSION ${LIBRSYNC_MAJOR_VERSION})
 install(TARGETS rsync ${INSTALL_TARGETS_DEFAULT_ARGS} DESTINATION lib)
-
-
-########### next target ###############
-
-set(rdiff_SRCS
-    src/rdiff.c
-    src/isprefix.c)
-
-add_executable(rdiff ${rdiff_SRCS})
-
-target_link_libraries(rdiff rsync ${POPT_LIBRARIES})
-
-install(TARGETS rdiff ${INSTALL_TARGETS_DEFAULT_ARGS} DESTINATION bin)
 
 
 ########### install files ###############
