@@ -18,8 +18,14 @@ SHLIB_TEENY ?=   ${LIBRSYNC_MICRO}
 
 #WARNS =	3
 
+.if defined(CPPFLAGS)
+CPPFLAGS +=	-I${.CURDIR}/blake2
+.else
+CFLAGS +=	-I${.CURDIR}/blake2
+.endif
+
 SRCS +=	base64.c
-SRCS +=	blake2b-ref.c
+SRCS +=	blake2/blake2b-ref.c
 SRCS +=	buf.c
 SRCS +=	checksum.c
 SRCS +=	command.c
@@ -91,6 +97,11 @@ librsync.pc: ${.CURDIR}/librsync.pc.in
 
 librsync.pc: ${.CURDIR}/Makefile
 librsync.pc: ${.CURDIR}/${bmake_topdir}/Makefile.inc
+
+beforedepend: ${.OBJDIR}/blake2
+
+${.OBJDIR}/blake2:
+	mkdir ${.TARGET}
 
 # here we do a little trick to pre-create a symlink to a unique name for the
 # static library so that on systems which don't allow full static linking, but
