@@ -1,0 +1,19 @@
+#
+# for pkgconf, or the older pkg-config, if you really must
+#
+# if "prefix" is not set at build time it can be set at install time,
+# though see the comment above "Libs:" below
+#
+prefix=@PREFIX@
+libdir=${prefix}/@LIBDIR@
+includedir=${prefix}/@INCSDIR@
+
+Name: @FULLNAME@
+Description: librsync is a library for calculating and applying network deltas, with an interface designed to ease integration into diverse network applications.
+Version: @LIBRSYNC_MAJOR@.@LIBRSYNC_MINOR@.@LIBRSYNC_MICRO@
+Cflags: -I${includedir}
+#
+# on some systems the linker may need a "-rpath" option...
+# (pkgsrc will add this automatically at install time)
+#
+Libs: -L${libdir} -l@LIB@

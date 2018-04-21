@@ -1,0 +1,91 @@
+# -*- makefile-bsdmake -*-
+# $NetBSD$
+
+# N.B.:  though this version of LIBRSYNC is diverging from the original, as yet it
+# has no API (or, so far as is known, ABI) differences, thus is still "2.0.0"
+
+PKGNAME=	librsync-2.0.0
+#PKGREVISION=	1
+CATEGORIES=	net sysutils
+DISTFILES=	# empty
+#MASTER_SITES=	${MASTER_SITE_GITHUB:=robohack/}
+#GITHUB_TAG=	v${PKGVERSION_NOREV}
+
+# XXX cwrappers is currently still very buggy
+USE_CWRAPPERS=	no
+
+MAINTAINER=	pkgsrc-users@NetBSD.org
+HOMEPAGE=	http://librsync.sourcefrog.net/
+COMMENT=	rsync-like rolling checksum library
+LICENSE=	gnu-lgpl-v2.1
+
+USE_LANGUAGES=	c
+
+MAKE_ENV+=	MAKEOBJDIRPREFIX=${WRKSRC}/build
+MAKE_ENV+=	${BSD_MAKE_ENV}
+
+AUTO_MKDIRS=	yes
+
+.include "../../mk/bsd.prefs.mk"
+
+# N.B.:  the following depend on PKGMAKECONF=/etc/mk.conf or the moral equivalent
+
+PLIST_VARS+=	mklint
+.if defined(MKLINT) && ${MKLINT} != "no"
+PLIST.mklint=	yes
+.endif
+
+PLIST_VARS+=	mkdebug
+.if defined(MKDEBUG) && ${MKDEBUG} != "no"
+PLIST.mkdebug=	yes
+.endif
+
+PLIST_VARS+=	mkdebuglib
+.if defined(MKDEBUGLIB) && ${MKDEBUGLIB} != "no"
+PLIST.mkdebuglib=	yes
+.endif
+
+do-extract:
+	${MKDIR} ${WRKSRC}
+	${CP} -R ${FILESDIR}/* ${WRKSRC}/
+	${RM} -rf ${WRKSRC}/CVS
+
+do-configure:
+	${MKDIR} ${WRKSRC}/build
+
+post-build:
+	sed -e 's|$${dollar}|$$|g'					\
+	    -e 's|^prefix=.*|prefix=${PREFIX}|'				\
+	    -e 's|^libdir=.*|libdir=$${prefix}/lib|'			\
+	    -e 's|^includedir=.*|includedir=$${prefix}/include|'	\
+	    -e 's|^Version:.*|Version: ${PKGVERSION}|'			\
+	    < ${WRKSRC}/src/${PKGBASE}.pc.in > ${WRKSRC}/src/${PKGBASE}.pc
+
+post-install:
+	${INSTALL_DATA} ${WRKSRC}/src/${PKGBASE}.pc ${DESTDIR}${PREFIX}/lib/pkgconfig
+
+
+# how to get from there to here....
+#
+# Go to where you have cloned https://github.com/robohack/librsync to, copy this
+# Makefile into your $pkgsrc/devel/librsync directory, go there, and build this
+# target:
+#
+#	cp Makefile /usr/pkgsrc/devel/librsync
+#	cd /usr/pkgsrc/net/librsync
+#	make REPODIR=$OLDPWD setup-pkgsrc
+#
+REPODIR ?=	/work/woods/m-librsync
+setup-pkgsrc:
+	${RM} -f ${FILESDIR}/README
+	${RM} -f ${FILESDIR}/TODO
+	${RM} -rf ${FILESDIR}/doc
+	${RM} -rf ${FILESDIR}/src
+	${RM} -rf ${FILESDIR}/tests
+	${CP} -R ${REPODIR}/* ${FILESDIR}/
+	${RM} -rf ${FILESDIR}/build ${FILESDIR}/dist
+
+.include "../../archivers/bzip2/buildlink3.mk"
+.include "../../devel/popt/buildlink3.mk"
+.include "../../devel/zlib/buildlink3.mk"
+.include "../../mk/bsd.pkg.mk"
