@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#!/bin/sh -e
 
 # librsync -- the library for network deltas
 # 
@@ -22,7 +22,7 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-srcdir='.'
+srcdir=$(dirname $0)
 
 . $srcdir/testcommon.sh
 
@@ -34,8 +34,8 @@ do
     do
         for inbuf in $bufsizes
         do
-            expect=`echo $input | sed -e 's/.in$/.sig/' -e "s,input,input/$hashfunc,"`
-            run_test $bindir/rdiff --hash=$hashfunc -I$inbuf -f signature "$input" "$new"
+            expect=$(echo $input | sed -e 's/.in$/.sig/' -e "s,input,input/$hashfunc,")
+            run_test ./rdiff --hash=$hashfunc -I$inbuf -f signature "$input" "$new"
             check_compare "$expect" "$new"
         done
     done

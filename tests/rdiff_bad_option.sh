@@ -1,4 +1,4 @@
-#! /bin/bash -ex
+#!/bin/sh
 
 # librsync -- the library for network deltas
 
@@ -18,11 +18,12 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#set -x
 
 # Bad command-line options return an error and print a message.
 
 errout=`mktemp -t rdiff_bad_option_test_XXXXXXX`
 trap "rm $errout" EXIT
-! $1/rdiff --imaginary-option 2>"$errout"
+./rdiff --imaginary-option 2>"$errout"
 cat "$errout"
 grep 'unknown option: --imaginary-option' "$errout"

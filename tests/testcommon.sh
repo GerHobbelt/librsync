@@ -17,17 +17,8 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
-# For CMake tests
-bindir=$1
-if [ -z "$bindir" ]
-then
-   # Fallback to automake tests
-   bindir='..'
-fi
-echo "BINDIR $bindir"
-
 testinputdir=$srcdir/$test_base.input
-tmpdir=`mktemp -d -t librsynctest_XXXXXXXX`
+tmpdir=$(mktemp -d -t librsynctest_XXXXXXXX)
 trap "{ rm -r $tmpdir; }" EXIT
 
 block_len=2048
@@ -87,10 +78,10 @@ triple_test () {
     new="$3"
     hashopt="$4"
     
-    run_test $bindir/rdiff $debug $hashopt -f -I$buf -O$buf $stats signature --block-size=$block_len \
+    run_test ./rdiff $debug $hashopt -f -I$buf -O$buf $stats signature --block-size=$block_len \
              $old $tmpdir/sig
-    run_test $bindir/rdiff $debug $hashopt -f -I$buf -O$buf $stats delta $tmpdir/sig $new $tmpdir/delta
-    run_test $bindir/rdiff $debug $hashopt -f -I$buf -O$buf $stats patch $old $tmpdir/delta $tmpdir/new
+    run_test ./rdiff $debug $hashopt -f -I$buf -O$buf $stats delta $tmpdir/sig $new $tmpdir/delta
+    run_test ./rdiff $debug $hashopt -f -I$buf -O$buf $stats patch $old $tmpdir/delta $tmpdir/new
     check_compare $new $tmpdir/new "triple -f -I$buf -O$buf $old $new"
 }
 

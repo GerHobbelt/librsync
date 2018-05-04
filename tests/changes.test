@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#!/bin/sh -e
 
 # librsync -- the library for network deltas
 # 
@@ -20,7 +20,7 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-srcdir='.'
+srcdir=$(dirname $0)
 
 . $srcdir/testcommon.sh
 

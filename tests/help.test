@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#!/bin/sh -e
 
 # librsync -- the library for network deltas
 # 
@@ -20,11 +20,10 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-srcdir='.'
-. $srcdir/testcommon.sh
+. $(dirname $0)/testcommon.sh
 
-run_test $bindir/rdiff --help
-run_test $bindir/rdiff --version
+run_test ./rdiff --help
+run_test ./rdiff --version
 
-run_test $bindir/rdiff --help | grep ' --statistics'
-run_test $bindir/rdiff --version | grep 'Copyright'
+run_test ./rdiff --help | grep ' --statistics'
+run_test ./rdiff --version | grep 'Copyright'

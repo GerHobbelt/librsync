@@ -1,4 +1,4 @@
-#! /bin/sh -ex
+#!/bin/sh -ex
 
 # librsync -- the library for network deltas
 
@@ -21,7 +21,7 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-srcdir='.'
+srcdir=$(dirname $0)
 
 . $srcdir/testcommon.sh
 
@@ -33,9 +33,8 @@ for delta in $inputdir/*.delta
 do
     for inbuf in $bufsizes
     do
-        cmd="$bindir/rdiff -I$inbuf -f patch /dev/null $delta $new"
-        run_test $cmd
-        expect=$inputdir/`basename $delta .delta`.expect
+        run_test ./rdiff -I$inbuf -f patch /dev/null $delta $new
+        expect=$inputdir/$(basename $delta .delta).expect
 	check_compare $expect $new
     done
 done
@@ -50,7 +49,7 @@ ret=0
 # Change $new and rerun last test to check it won't be reverted
 echo "$output_expect" > $expect
 echo "$output_expect" > $new
-cmd="$bindir/rdiff patch /dev/null $delta $new"
+cmd="./rdiff patch /dev/null $delta $new"
 echo "    $cmd" >&2
 output="`$cmd 2>&1`" || ret=$?
 [ "$ret" -eq "$RS_IO_ERROR" ] ||

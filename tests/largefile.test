@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#!/bin/sh -e
 #
 # librsync -- the library for network deltas
 # Copyright (C) 2001, 2014 by Martin Pool <mbp@sourcefrog.net>
@@ -24,19 +24,16 @@
 # Note this test is not included in make check because it creates very
 # large data files and takes a long time.
 
-srcdir='.'
+srcdir=$(dirname $0)
 . $srcdir/testcommon.sh
 
-# Note $1 is used to specify "BINDIR" by cmake tests, so we use
-# arguments after that.
+# Allow the number of blocks to be specified in $1 in the form '64K'.
+blocks=${1:-64k}
 
-# Allow the number of blocks to be specified in $2 in the form '64K'.
-blocks=${2:-64K}
-
-# Allow a data directory to be specified in $3 to use persistent
+# Allow a data directory to be specified in $2 to use persistent
 # random data files to make tests more repeatable, otherwise use
 # $tmpdir.
-datadir=${3:-$tmpdir}
+datadir=${2:-$tmpdir}
 echo "DATADIR $datadir"
 
 # Use $4 to optionally specify a block size to use.
@@ -56,6 +53,8 @@ if [ ! -f "$old" ]; then
    dd bs=$blocks count=256 if=/dev/urandom >>"$new"
    dd bs=$blocks count=256 skip=640 if="$old" >>"$new"
 fi
+
+bindir=.
 
 run_test time $bindir/rdiff $debug -f -s -b $blocksize -S 8 signature $old $sig
 run_test time $bindir/rdiff $debug -f -s delta $sig $new $delta

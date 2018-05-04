@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#!/bin/sh -e
 
 # librsync -- the library for network deltas
 # Copyright (C) 2001, 2014 by Martin Pool <mbp@sourcefrog.net>
@@ -20,12 +20,11 @@
 # License along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-srcdir='.'
-
-. $srcdir/testcommon.sh
+. $(dirname $0)/testcommon.sh
 
 old=$srcdir/COPYING
 
+# xxx this is insanity -- perl is unnecessary!
 if which perl >/dev/null
 then
     :
@@ -48,9 +47,9 @@ do
 
     for hashopt in '' -Hmd4 -Hblake2
     do
-	run_test $bindir/rdiff -f $debug $hashopt signature $old $sig
-	run_test $bindir/rdiff -f $debug delta $sig $new $delta
-	run_test $bindir/rdiff -f $debug patch $old $delta $out
+	run_test ./rdiff -f $debug $hashopt signature $old $sig
+	run_test ./rdiff -f $debug delta $sig $new $delta
+	run_test ./rdiff -f $debug patch $old $delta $out
 
 	check_compare "$new" "$out" "mutate $i $old $new"
     done
