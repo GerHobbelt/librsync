@@ -22,8 +22,16 @@ CPPFLAGS +=		-DVERSION='"${LIBRSYNC_VERSION}"'
 #
 # XXX this needs to be fixed!!!
 #
+.if exists(/usr/pkg)
 POPT_INCLUDE =	 /usr/pkg/include
 POPT_LIB =	 /usr/pkg/lib
+.elif exists(/opt/pkg)
+POPT_INCLUDE =	 /opt/pkg/include
+POPT_LIB =	 /opt/pkg/lib
+.elif
+POPT_INCLUDE =	 /usr/local/include
+POPT_LIB =	 /usr/local/lib
+.endif
 #INTL_INCLUDE =	 /usr/pkg/include
 #INTL_LIB =	 /usr/pkg/lib
 
