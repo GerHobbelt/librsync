@@ -9,12 +9,16 @@ To build librsync you will need:
 * [BSDMake] -- i.e. any *BSD Make (NetBSD, FreeBSD, OpenBSD, etc.), old
   OSX bsdmake, pkgsrc bmake, or Simon Gerraty's Bmake & Mk-files.
 
+* [popt] command line parsing library
+
 * [Doxygen] - optional, to build docs
 
+[popt]: http://rpm5.org/files/popt/
 [BMake]: http://www.crufty.net/help/sjg/bmake.html
 [pkgsrc]: https://pkgsrc.org/
 [pkgsrc/devel/bmake]: http://cdn.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/bmake/
 [pkgsrc/pkgtools/bootstrap-mk-files]: http://cdn.NetBSD.org/pub/pkgsrc/current/pkgsrc/pkgtools/bootstrap-mk-files/
+[pkgsrc/devel/popt]: http://cdn.NetBSD.org/pub/pkgsrc/current/pkgsrc/devel/popt/
 [Doxygen]: https://www.stack.nl/~dimitri/doxygen
 
 ## Building
