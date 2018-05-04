@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <sys/stat.h>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
