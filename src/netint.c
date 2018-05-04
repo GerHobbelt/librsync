@@ -58,6 +58,7 @@
 #include "stream.h"
 
 /** Write a single byte to a stream output. */
+/* xxx FixMe:  never, ever, use anything smaller than sizeof(int) as a parameter!!!! */
 rs_result rs_squirt_byte(rs_job_t *job, unsigned char d)
 {
     rs_tube_write(job, &d, (size_t) 1);
