@@ -55,6 +55,8 @@ SRCS +=	util.c
 SRCS +=	version.c
 SRCS +=	whole.c
 
+version.o: ${.CURDIR}/${bmake_topdir}/Makefile.inc
+
 .if defined(POPT_INCLUDE)
 .if defined(CPPFLAGS)
 CPPFLAGS +=	-I${POPT_INCLUDE}

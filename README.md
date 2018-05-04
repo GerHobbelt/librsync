@@ -19,6 +19,15 @@ released under the [CC0 public domain dedication][CC0].
 [CC0]: http://creativecommons.org/publicdomain/zero/1.0/
 
 
+## NOTE:  This is a forked version.
+
+This is a fork of the original which uses BSDMake for building, and
+which includes a few minor bug fixes.  This fork is hosted at
+[robohack's GitHub][GHRL] by Greg A. Woods.
+
+[GHRL]: https://github.com/robohack/librsync/
+
+
 ## Introduction
 
 librsync is a library for calculating and applying network deltas,
@@ -81,3 +90,13 @@ your own code or make use of some other virtual filesystem layer.
 * \ref rdiff command line interface
 * \ref NEWS.md
 * \ref page_formats
+
+
+```elisp
+;;
+;; Local Variables:
+;; eval: (make-local-variable 'compile-command)
+;; compile-command: (concat "mkdir -p build; " (default-value 'compile-command) " MAKEOBJDIRPREFIX=$(pwd)/build")
+;; End:
+;;
+```

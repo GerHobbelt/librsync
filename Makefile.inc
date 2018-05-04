@@ -11,10 +11,12 @@
 # e.g. in particular the use of .-include "$Makefile.${MACHINE}.inc" etc.
 
 LIBRSYNC_MAJOR =	2
-LIBRSYNC_MINOR =	2
+LIBRSYNC_MINOR =	1
 LIBRSYNC_MICRO =	0
 
 LIBRSYNC_VERSION =	${LIBRSYNC_MAJOR}.${LIBRSYNC_MINOR}.${LIBRSYNC_MICRO}
+
+CPPFLAGS +=		-DVERSION='"${LIBRSYNC_VERSION}"'
 
 # where to find libpopt and its headers...
 #
@@ -36,9 +38,6 @@ OPTIM ?= -O0
 
 NOGCCERROR = 1
 WARNS = 0
-
-# special for librsync, could be the default?
-DBG += -DDO_RS_TRACE
 
 # N.B.:  testing in the build or 'install' (distribution) directories, or making
 # a distribution that can be un-packed on a target system in any arbitrary
@@ -167,3 +166,10 @@ CPPFLAGS +=	-I${bmake_srcdir}
 .else
 CFLAGS +=	-I${bmake_srcdir}
 .endif
+
+#
+# Local Variables:
+# eval: (make-local-variable 'compile-command)
+# compile-command: (concat "mkdir -p build; " (default-value 'compile-command) " MAKEOBJDIRPREFIX=$(pwd)/build")
+# End:
+#
