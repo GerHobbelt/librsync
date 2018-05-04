@@ -1,15 +1,19 @@
+.DS_Store
+obj/
+obj.*/
+/build/
+/dist/
+
 rdiff
 *.o
-CMakeCache.txt
-CTestTestfile.cmake
-config.h
+# for now this is source!
+#config.h
 *.cbp
-librsync-config.h
+# for now this is source!
+#librsync-config.h
 librsync.so*
 librsync.a
 librsync*.dylib
-Makefile
-CMakeFiles
 *.lo
 .libs
 librsync.la
@@ -17,8 +21,8 @@ librsync-[0-9]*tar.gz
 librsync-[0-9]*/
 /m4/
 tags
+TAGS
 *.dylib
-cmake_install.cmake
 *.la
 doc/Doxyfile
 tests/isprefix.driver
