@@ -107,10 +107,9 @@ rs_result rs_job_iter(rs_job_t *job, rs_buffers_t *buffers)
     if (result == RS_BLOCKED || result == RS_DONE)
         if ((orig_in == buffers->avail_in) && (orig_out == buffers->avail_out)
             && orig_in && orig_out) {
-            rs_error("internal error: job made no progress " "[orig_in="
-                     FMT_SIZE ", orig_out=" FMT_SIZE ", final_in=" FMT_SIZE
-                     ", final_out=" FMT_SIZE "]", orig_in, orig_out,
-                     buffers->avail_in, buffers->avail_out);
+            rs_error("internal error: job made no progress " "[orig_in=%jd, orig_out=%jd, final_in=%jd, final_out=%jd]",
+                     (uintmax_t) orig_in, (uintmax_t) orig_out,
+                     (uintmax_t) buffers->avail_in, (uintmax_t) buffers->avail_out);
             return RS_INTERNAL_ERROR;
         }
     return result;

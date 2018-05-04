@@ -61,7 +61,7 @@ void rs_calc_md4_sum(void const *buf, size_t len, rs_strong_sum_t *sum)
 void rs_calc_blake2_sum(void const *buf, size_t len, rs_strong_sum_t *sum)
 {
     blake2b_state ctx;
-    blake2b_init(&ctx, RS_MAX_STRONG_SUM_LENGTH);
-    blake2b_update(&ctx, (const uint8_t *)buf, len);
-    blake2b_final(&ctx, (uint8_t *)sum, RS_MAX_STRONG_SUM_LENGTH);
+    blake2b_init(&ctx, (size_t) RS_MAX_STRONG_SUM_LENGTH);
+    blake2b_update(&ctx, (const rs_byte_t *)buf, len);
+    blake2b_final(&ctx, (rs_byte_t *)sum, (size_t) RS_MAX_STRONG_SUM_LENGTH); /* xxx pointer cast! */
 }

@@ -124,8 +124,8 @@
 
 /** The hashtable type. */
 typedef struct hashtable {
-    int size;                   /**< Size of allocated hashtable. */
-    int count;                  /**< Number of entries in hashtable. */
+    size_t size;                 /**< Size of allocated hashtable. */
+    size_t count;                /**< Number of entries in hashtable. */
 #  ifndef HASHTABLE_NSTATS
     /* The following are for accumulating hashtable_find() stats. */
     long find_count;            /**< The count of finds tried. */
@@ -140,17 +140,17 @@ typedef struct hashtable {
 /** The hashtable iterator type. */
 typedef struct hashtable_iter {
     hashtable_t *htable;        /**< The hashtable to iterate over. */
-    int index;                  /**< The index to scan from next. */
+    size_t index;                  /**< The index to scan from next. */
 } hashtable_iter_t;
 
 /* void* implementations for the type-safe static inline wrappers below. */
-hashtable_t *_hashtable_new(int size);
+hashtable_t *_hashtable_new(size_t size);
 void _hashtable_free(hashtable_t *t);
 void *_hashtable_iter(hashtable_iter_t *i, hashtable_t *t);
 void *_hashtable_next(hashtable_iter_t *i);
 
 /** MurmurHash3 finalization mix function. */
-static inline unsigned mix32(unsigned int h)
+static inline unsigned mix32(uint32_t h)
 {
     h ^= h >> 16;
     h *= 0x85ebca6b;
@@ -181,7 +181,7 @@ static inline unsigned mix32(unsigned int h)
 #  endif
 
 #  define ENTRY_T _JOIN(ENTRY, _t)      /**< The entry type. */
-#  define KEY_T _JOIN(KEY, _t)  /**< The key type. */
+#  define KEY_T _JOIN(KEY, _t)          /**< The key type. */
 #  define MATCH_T _JOIN(MATCH, _t)      /**< The match type. */
 /** The key hash(k) method. */
 #  define KEY_HASH(k) _JOIN(KEY, _hash)(k)
@@ -192,10 +192,11 @@ static inline unsigned mix32(unsigned int h)
 /* Loop macro for probing table t for key k, setting hk to the hash for k
    reserving zero for empty buckets, and iterating with index i and entry hash
    h, terminating at an empty bucket. */
-#  define _for_probe(t, k, hk, i, h) \
-    const unsigned mask = t->size - 1;\
-    unsigned hk = KEY_HASH((KEY_T *)k), i, s, h;\
-    hk = hk ? hk : -1;\
+#  define _for_probe(t, k, hk, i, h)                                    \
+    const size_t mask = t->size - 1;                                    \
+    size_t i;                                                           \
+    uint32_t hk = KEY_HASH((KEY_T *)k), s, h;                           \
+    hk = hk ? hk : (unsigned int) -1;                                   \
     for (i = mix32(hk) & mask, s = 0; (h = t->ktable[i]); i = (i + ++s) & mask)
 
 /* Conditional macro for incrementing stats counters. */
@@ -216,7 +217,7 @@ static inline unsigned mix32(unsigned int h)
  * \param size - The desired minimum size of the hash table.
  *
  * \return The initialized hashtable instance or NULL if it failed. */
-static inline hashtable_t *_FUNC(_new) (int size) {
+static inline hashtable_t *_FUNC(_new) (size_t size) {
     return _hashtable_new(size);
 }
 
@@ -257,10 +258,14 @@ static inline ENTRY_T *_FUNC(_add) (hashtable_t *t, ENTRY_T * e) {
     assert(e != NULL);
     if (t->count + 1 == t->size)
         return NULL;
+    /*  */ {
+        
     _for_probe(t, e, he, i, h);
     t->count++;
     t->ktable[i] = he;
     return t->etable[i] = e;
+        
+    }
 }
 
 /** Find an entry in a hashtable.
@@ -274,10 +279,12 @@ static inline ENTRY_T *_FUNC(_add) (hashtable_t *t, ENTRY_T * e) {
  *
  * \return The first found entry, or NULL if nothing was found. */
 static inline ENTRY_T *_FUNC(_find) (hashtable_t *t, MATCH_T * m) {
-    assert(m != NULL);
     ENTRY_T *e;
+    assert(m != NULL);
 
     _stats_inc(t->find_count);
+    /*  */ {
+        
     _for_probe(t, m, hm, i, he) {
         _stats_inc(t->hashcmp_count);
         if (hm == he) {
@@ -287,6 +294,8 @@ static inline ENTRY_T *_FUNC(_find) (hashtable_t *t, MATCH_T * m) {
                 return e;
             }
         }
+    }
+        
     }
     return NULL;
 }

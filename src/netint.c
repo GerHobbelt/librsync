@@ -57,12 +57,10 @@
 #include "trace.h"
 #include "stream.h"
 
-#define RS_MAX_INT_BYTES 8
-
 /** Write a single byte to a stream output. */
 rs_result rs_squirt_byte(rs_job_t *job, unsigned char d)
 {
-    rs_tube_write(job, &d, 1);
+    rs_tube_write(job, &d, (size_t) 1);
     return RS_DONE;
 }
 
@@ -73,44 +71,44 @@ rs_result rs_squirt_byte(rs_job_t *job, unsigned char d)
  * \param d Datum to write out.
  *
  * \param len Length of integer, in bytes. */
-rs_result rs_squirt_netint(rs_job_t *job, rs_long_t d, int len)
+rs_result rs_squirt_netint(rs_job_t *job, rs_long_t d, unsigned int len)
 {
-    unsigned char buf[RS_MAX_INT_BYTES];
-    int i;
+    unsigned char buf[sizeof(rs_long_t)];
+    int i;                              /* signed, for counting down */
 
-    if (len <= 0 || len > RS_MAX_INT_BYTES) {
+    if (len > sizeof(rs_long_t)) {
         rs_error("Illegal integer length %d", len);
         return RS_INTERNAL_ERROR;
     }
 
     /* Fill the output buffer with a bigendian representation of the number. */
-    for (i = len - 1; i >= 0; i--) {
-        buf[i] = d;             /* truncated */
+    for (i = (int) len - 1; i >= 0; i--) {
+        buf[i] = (unsigned char) d;             /* truncated */
         d >>= 8;
     }
 
-    rs_tube_write(job, buf, len);
+    rs_tube_write(job, buf, (size_t) len);
 
     return RS_DONE;
 }
 
-rs_result rs_squirt_n4(rs_job_t *job, int val)
+rs_result rs_squirt_n4(rs_job_t *job, uint32_t val)
 {
-    return rs_squirt_netint(job, val, 4);
+    return rs_squirt_netint(job, (rs_long_t) val, 4);
 }
 
-rs_result rs_suck_netint(rs_job_t *job, rs_long_t *v, int len)
+rs_result rs_suck_netint(rs_job_t *job, rs_long_t *v, unsigned int len)
 {
     unsigned char *buf;
-    int i;
+    unsigned int i;
     rs_result result;
 
-    if (len <= 0 || len > RS_MAX_INT_BYTES) {
+    if (len > sizeof(rs_long_t)) {
         rs_error("Illegal integer length %d", len);
         return RS_INTERNAL_ERROR;
     }
 
-    if ((result = rs_scoop_read(job, len, (void **)&buf)) != RS_DONE)
+    if ((result = rs_scoop_read(job, (size_t)len, (void **)&buf)) != RS_DONE)
         return result;
 
     *v = 0;
@@ -127,23 +125,23 @@ rs_result rs_suck_byte(rs_job_t *job, unsigned char *v)
     void *inb;
     rs_result result;
 
-    if ((result = rs_scoop_read(job, 1, &inb)) == RS_DONE)
+    if ((result = rs_scoop_read(job, (size_t)1, &inb)) == RS_DONE)
         *v = *((unsigned char *)inb);
 
     return result;
 }
 
-rs_result rs_suck_n4(rs_job_t *job, int *v)
+rs_result rs_suck_n4(rs_job_t *job, uint32_t *v)
 {
     rs_result result;
     rs_long_t d;
 
     result = rs_suck_netint(job, &d, 4);
-    *v = d;
+    *v = (uint32_t) d;
     return result;
 }
 
-int rs_int_len(rs_long_t val)
+unsigned int rs_int_len(rs_long_t val)
 {
     if (!(val & ~(rs_long_t)0xff))
         return 1;
@@ -154,7 +152,7 @@ int rs_int_len(rs_long_t val)
     else if (!(val & ~(rs_long_t)0xffffffffffffffff))
         return 8;
     else {
-        rs_fatal("can't encode integer " FMT_LONG " yet", val);
-        return -1;
+        rs_fatal("can't encode integer %ju yet", (uintmax_t) val);
+        return (unsigned int) -1;
     }
 }

@@ -58,8 +58,9 @@ static rs_result rs_patch_s_cmdbyte(rs_job_t *job)
 
     job->cmd = &rs_prototab[job->op];
 
-    rs_trace("got command %#04x (%s), len_1=" FMT_SIZE "", job->op,
-             rs_op_kind_name(job->cmd->kind), job->cmd->len_1);
+    rs_trace("got command byte 0x%04x (%s), len_1=%ju", job->op,
+             rs_op_kind_name(job->cmd->kind),
+             (uintmax_t) job->cmd->len_1);
 
     if (job->cmd->len_1)
         job->statefn = rs_patch_s_params;
@@ -76,22 +77,22 @@ static rs_result rs_patch_s_cmdbyte(rs_job_t *job)
 static rs_result rs_patch_s_params(rs_job_t *job)
 {
     rs_result result;
-    int len = job->cmd->len_1 + job->cmd->len_2;
+    size_t len = job->cmd->len_1 + job->cmd->len_2;
     void *p;
 
     assert(len);
 
-    result = rs_scoop_readahead(job, len, &p);
+    result = rs_scoop_readahead(job, (size_t) len, &p);
     if (result != RS_DONE)
         return result;
 
     /* we now must have LEN bytes buffered */
-    result = rs_suck_netint(job, &job->param1, job->cmd->len_1);
+    result = rs_suck_netint(job, &job->param1, (unsigned int) job->cmd->len_1);
     /* shouldn't fail, since we already checked */
     assert(result == RS_DONE);
 
     if (job->cmd->len_2) {
-        result = rs_suck_netint(job, &job->param2, job->cmd->len_2);
+        result = rs_suck_netint(job, &job->param2, (unsigned int) job->cmd->len_2);
         assert(result == RS_DONE);
     }
 
@@ -129,12 +130,7 @@ static rs_result rs_patch_s_literal(rs_job_t *job)
 {
     rs_long_t len = job->param1;
 
-    rs_trace("LITERAL(len=" FMT_LONG ")", len);
-
-    if (len < 0) {
-        rs_error("invalid length=" FMT_LONG " on LITERAL command", len);
-        return RS_CORRUPT;
-    }
+    rs_trace("LITERAL(len=%ju)", (uintmax_t) len);
 
     job->stats.lit_cmds++;
     job->stats.lit_bytes += len;
@@ -154,17 +150,7 @@ static rs_result rs_patch_s_copy(rs_job_t *job)
     where = job->param1;
     len = job->param2;
 
-    rs_trace("COPY(where=" FMT_LONG ", len=" FMT_LONG ")", where, len);
-
-    if (len < 0) {
-        rs_error("invalid length=" FMT_LONG " on COPY command", len);
-        return RS_CORRUPT;
-    }
-
-    if (where < 0) {
-        rs_error("invalid where=" FMT_LONG " on COPY command", where);
-        return RS_CORRUPT;
-    }
+    rs_trace("COPY(where=%ju, len=%ju)", (uintmax_t) where, (uintmax_t) len);
 
     job->basis_pos = where;
     job->basis_len = len;
@@ -196,18 +182,18 @@ static rs_result rs_patch_s_copying(rs_job_t *job)
     if (!len)
         return RS_BLOCKED;
 
-    rs_trace("copy " FMT_SIZE " bytes from basis at offset " FMT_LONG "", len,
-             job->basis_pos);
+    rs_trace("copy %ju bytes from basis at offset %ju",
+             (uintmax_t) len, (uintmax_t) job->basis_pos);
 
     ptr = buffs->next_out;
 
     result = (job->copy_cb) (job->copy_arg, job->basis_pos, &len, &ptr);
     if (result != RS_DONE)
         return result;
-    else
+    else {
         rs_trace("copy callback returned %s", rs_strerror(result));
-
-    rs_trace("got " FMT_SIZE " bytes back from basis callback", len);
+    }
+    rs_trace("got %ju bytes back from basis callback", (uintmax_t) len);
 
     if (len > desired_len) {
         rs_trace("warning: copy_cb returned more than the requested length.");
@@ -235,7 +221,7 @@ static rs_result rs_patch_s_copying(rs_job_t *job)
 /** Called while we're trying to read the header of the patch. */
 static rs_result rs_patch_s_header(rs_job_t *job)
 {
-    int v;
+    uint32_t v;
     rs_result result;
 
     if ((result = rs_suck_n4(job, &v)) != RS_DONE)
@@ -245,8 +231,9 @@ static rs_result rs_patch_s_header(rs_job_t *job)
         rs_error("got magic number %#x rather than expected value %#x", v,
                  RS_DELTA_MAGIC);
         return RS_BAD_MAGIC;
-    } else
+    } else {
         rs_trace("got patch magic %#x", v);
+    }
 
     job->statefn = rs_patch_s_cmdbyte;
 

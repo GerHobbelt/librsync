@@ -33,15 +33,15 @@
 #include "util.h"
 #include "trace.h"
 
-const int RS_MD4_SUM_LENGTH = 16;
-const int RS_BLAKE2_SUM_LENGTH = 32;
+const uint32_t RS_MD4_SUM_LENGTH = 16;
+const uint32_t RS_BLAKE2_SUM_LENGTH = 32;
 
 static void rs_block_sig_init(rs_block_sig_t *sig, rs_weak_sum_t weak_sum,
-                              rs_strong_sum_t *strong_sum, int strong_len)
+                              rs_strong_sum_t *strong_sum, uint32_t strong_len)
 {
     sig->weak_sum = weak_sum;
     if (strong_sum)
-        memcpy(sig->strong_sum, strong_sum, strong_len);
+        memcpy(sig->strong_sum, strong_sum, (size_t) strong_len);
 }
 
 static inline unsigned rs_block_sig_hash(const rs_block_sig_t *sig)
@@ -81,7 +81,7 @@ static inline int rs_block_match_cmp(rs_block_match_t *match,
         match->buf = NULL;
     }
     return memcmp(&match->block_sig.strong_sum, &block_sig->strong_sum,
-                  match->signature->strong_sum_len);
+                  (size_t) match->signature->strong_sum_len);
 }
 
 /* Instantiate hashtable for rs_block_sig and rs_block_match. */
@@ -91,37 +91,35 @@ static inline int rs_block_match_cmp(rs_block_match_t *match,
 #include "hashtable.h"
 
 /* Get the size of a packed rs_block_sig_t. */
-static inline size_t rs_block_sig_size(const rs_signature_t *sig)
+static inline uint32_t rs_block_sig_size(const rs_signature_t *sig)
 {
     /* Round up to next multiple of sizeof(weak_sum) to align memory correctly.
      */
-    return offsetof(rs_block_sig_t,
-                    strong_sum) + ((sig->strong_sum_len +
-                                    sizeof(rs_weak_sum_t)-
-                                    1) / sizeof(rs_weak_sum_t)) *
-        sizeof(rs_weak_sum_t);
+    return (uint32_t) (offsetof(rs_block_sig_t, strong_sum) +
+                       ((sig->strong_sum_len + sizeof(rs_weak_sum_t) - 1) /
+                        sizeof(rs_weak_sum_t)) * sizeof(rs_weak_sum_t));
 }
 
 /* Get the pointer to the block_sig_t from a block index. */
 static inline rs_block_sig_t *rs_block_sig_ptr(const rs_signature_t *sig,
-                                               int block_idx)
+                                               uint32_t block_idx)
 {
     return (rs_block_sig_t *)((char *)sig->block_sigs +
                                block_idx * rs_block_sig_size(sig));
 }
 
 /* Get the index of a block from a block_sig_t pointer. */
-static inline int rs_block_sig_idx(const rs_signature_t *sig,
-                                   rs_block_sig_t *block_sig)
+static inline uint32_t rs_block_sig_idx(const rs_signature_t *sig,
+                                      rs_block_sig_t *block_sig)
 {
-    return ((char *)block_sig -
-            (char *)sig->block_sigs) / rs_block_sig_size(sig);
+    return (uint32_t) ((char *)block_sig -
+                       (char *)sig->block_sigs) / rs_block_sig_size(sig);
 }
 
-rs_result rs_signature_init(rs_signature_t *sig, int magic, int block_len,
-                            int strong_len, rs_long_t sig_fsize)
+rs_result rs_signature_init(rs_signature_t *sig, uint32_t magic, uint32_t block_len,
+                            uint32_t strong_len, rs_long_t sig_fsize)
 {
-    int max_strong_len;
+    uint32_t max_strong_len;
 
     /* Check and set default arguments. */
     magic = magic ? magic : RS_BLAKE2_SIG_MAGIC;
@@ -149,10 +147,10 @@ rs_result rs_signature_init(rs_signature_t *sig, int magic, int block_len,
     /* Calculate the number of blocks if we have the signature file size. */
     /* Magic+header is 12 bytes, each block thereafter is 4 bytes
        weak_sum+strong_sum_len bytes */
-    sig->size = (int)(sig_fsize ? (sig_fsize - 12) / (4 + strong_len) : 0);
+    sig->size = (uint32_t) (sig_fsize ? (sig_fsize - 12) / (4 + strong_len) : 0);
     if (sig->size)
         sig->block_sigs =
-            rs_alloc(sig->size * rs_block_sig_size(sig),
+            rs_alloc((size_t) sig->size * rs_block_sig_size(sig),
                      "signature->block_sigs");
     else
         sig->block_sigs = NULL;
@@ -174,15 +172,17 @@ rs_block_sig_t *rs_signature_add_block(rs_signature_t *sig,
                                        rs_weak_sum_t weak_sum,
                                        rs_strong_sum_t *strong_sum)
 {
+    rs_block_sig_t *b;
+
     rs_signature_check(sig);
     /* If block_sigs is full, allocate more space. */
     if (sig->count == sig->size) {
         sig->size = sig->size ? sig->size * 2 : 16;
         sig->block_sigs =
-            rs_realloc(sig->block_sigs, sig->size * rs_block_sig_size(sig),
+            rs_realloc(sig->block_sigs, (size_t) sig->size * rs_block_sig_size(sig),
                        "signature->block_sigs");
     }
-    rs_block_sig_t *b = rs_block_sig_ptr(sig, sig->count++);
+    b = rs_block_sig_ptr(sig, sig->count++);
     rs_block_sig_init(b, weak_sum, strong_sum, sig->strong_sum_len);
     return b;
 }
@@ -198,7 +198,7 @@ rs_long_t rs_signature_find_match(rs_signature_t *sig, rs_weak_sum_t weak_sum,
     if ((b = hashtable_find(sig->hashtable, &m))) {
         return (rs_long_t)rs_block_sig_idx(sig, b) * sig->block_len;
     }
-    return -1;
+    return (rs_long_t) -1;
 }
 
 void rs_signature_log_stats(rs_signature_t const *sig)
@@ -210,11 +210,11 @@ void rs_signature_log_stats(rs_signature_t const *sig)
            "match statistics: signature[%ld searches, %ld (%.3f%%) matches, "
            "%ld (%.3fx) weak sum compares, %ld (%.3f%%) strong sum compares, "
            "%ld (%.3f%%) strong sum calcs]", t->find_count, t->match_count,
-           100.0 * (double)t->match_count / t->find_count, t->hashcmp_count,
-           (double)t->hashcmp_count / t->find_count, t->entrycmp_count,
-           100.0 * (double)t->entrycmp_count / t->find_count,
+           100.0 * (double)t->match_count / (double)t->find_count, t->hashcmp_count,
+           (double)t->hashcmp_count / (double)t->find_count, t->entrycmp_count,
+           100.0 * (double)t->entrycmp_count / (double)t->find_count,
            sig->calc_strong_count,
-           100.0 * (double)sig->calc_strong_count / t->find_count);
+           100.0 * (double)sig->calc_strong_count / (double)t->find_count);
 #endif
 }
 
@@ -222,15 +222,15 @@ rs_result rs_build_hash_table(rs_signature_t *sig)
 {
     rs_block_match_t m;
     rs_block_sig_t *b;
-    int i;
+    unsigned int i;
 
     rs_signature_check(sig);
-    sig->hashtable = hashtable_new(sig->count);
+    sig->hashtable = hashtable_new((size_t) sig->count);
     if (!sig->hashtable)
         return RS_MEM_ERROR;
     for (i = 0; i < sig->count; i++) {
         b = rs_block_sig_ptr(sig, i);
-        rs_block_match_init(&m, sig, b->weak_sum, &b->strong_sum, NULL, 0);
+        rs_block_match_init(&m, sig, b->weak_sum, &b->strong_sum, NULL, (size_t) 0);
         if (!hashtable_find(sig->hashtable, &m))
             hashtable_add(sig->hashtable, b);
     }
@@ -246,19 +246,19 @@ void rs_free_sumset(rs_signature_t *psums)
 
 void rs_sumset_dump(rs_signature_t const *sums)
 {
-    int i;
+    unsigned int i;
     rs_block_sig_t *b;
     char strong_hex[RS_MAX_STRONG_SUM_LENGTH * 3];
 
     rs_log(RS_LOG_INFO | RS_LOG_NONAME,
-           "sumset info: magic=%#x, block_len=%d, block_num=%d", sums->magic,
-           sums->block_len, sums->count);
+           "sumset info: magic=%#x, block_len=%u, block_num=%ju", sums->magic,
+           sums->block_len, (uintmax_t) sums->count);
 
     for (i = 0; i < sums->count; i++) {
         b = rs_block_sig_ptr(sums, i);
-        rs_hexify(strong_hex, b->strong_sum, sums->strong_sum_len);
+        rs_hexify(strong_hex, b->strong_sum, (size_t) sums->strong_sum_len);
         rs_log(RS_LOG_INFO | RS_LOG_NONAME,
-               "sum %6d: weak=" FMT_WEAKSUM ", strong=%s", i, b->weak_sum,
+               "sum %6d: weak=%ju, strong=%s", i, (uintmax_t) b->weak_sum,
                strong_hex);
     }
 }

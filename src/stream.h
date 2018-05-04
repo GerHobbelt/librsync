@@ -28,11 +28,11 @@
                  */
 
 int rs_buffers_is_empty(rs_buffers_t *stream);
-int rs_buffers_copy(rs_buffers_t *stream, int len);
+size_t rs_buffers_copy(rs_buffers_t *stream, size_t len);
 
 int rs_tube_catchup(rs_job_t *);
 void rs_tube_write(rs_job_t *, void const *buf, size_t len);
-void rs_tube_copy(rs_job_t *, int len);
+void rs_tube_copy(rs_job_t *, size_t len);
 int rs_tube_is_idle(rs_job_t const *);
 void rs_check_tube(rs_job_t *);
 

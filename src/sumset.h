@@ -35,16 +35,16 @@ typedef struct rs_block_sig {
  * This includes the all the block sums generated for a file and datastructures
  * for fast matching against them. */
 struct rs_signature {
-    int magic;                  /**< The signature magic value. */
-    int block_len;              /**< The block length. */
-    int strong_sum_len;         /**< The block strong sum length. */
-    int count;                  /**< Total number of blocks. */
-    int size;                   /**< Total number of blocks allocated. */
+    uint32_t magic;             /**< The signature magic value. */
+    uint32_t block_len;         /**< The block length. */
+    uint32_t strong_sum_len;    /**< The block strong sum length. */
+    uint32_t count;             /**< Total number of blocks. */
+    uint32_t size;              /**< Total number of blocks allocated. */
     void *block_sigs;           /**< The packed block_sigs for all blocks. */
     hashtable_t *hashtable;     /**< The hashtable for finding matches. */
     /* The is extra stats not included in the hashtable stats. */
 #ifndef HASHTABLE_NSTATS
-    long calc_strong_count;     /**< The count of strongsum calcs done. */
+    unsigned long calc_strong_count; /**< The count of strongsum calcs done. */
 #endif
 };
 
@@ -62,8 +62,8 @@ struct rs_signature {
  *
  * \param sig_fsize signature file size to preallocate required storage for.
  * Use 0 if size is unknown. */
-rs_result rs_signature_init(rs_signature_t *sig, int magic, int block_len,
-                            int strong_len, rs_long_t sig_fsize);
+rs_result rs_signature_init(rs_signature_t *sig, uint32_t magic, uint32_t block_len,
+                            uint32_t strong_len, rs_long_t sig_fsize);
 
 /** Destroy an rs_signature instance. */
 void rs_signature_done(rs_signature_t *sig);
@@ -89,7 +89,7 @@ void rs_signature_log_stats(rs_signature_t const *sig);
            || ((sig)->magic == RS_MD4_SIG_MAGIC && (sig)->strong_sum_len <= RS_MD4_SUM_LENGTH));\
     assert(0 < (sig)->block_len);\
     assert(0 < (sig)->strong_sum_len && (sig)->strong_sum_len <= RS_MAX_STRONG_SUM_LENGTH);\
-    assert(0 <= (sig)->count && (sig)->count <= (sig)->size);\
+    assert((sig)->count <= (sig)->size);\
     assert(!(sig)->hashtable || (sig)->hashtable->count <= (sig)->count);\
 } while (0)
 

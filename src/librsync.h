@@ -49,8 +49,8 @@ extern char const rs_librsync_version[];
 /** Summary of the licence for librsync. */
 extern char const rs_licence_string[];
 
-typedef uint8_t rs_byte_t;
-typedef intmax_t rs_long_t;
+typedef uint8_t rs_byte_t;       /* xxx stupid -- should just use uint8_t */
+typedef uintmax_t rs_long_t;     /* unsigned and xxx must be >= sizeof(off_t) */
 
                           /*=
                            | "The IETF already has more than enough
@@ -145,7 +145,7 @@ int rs_supports_trace(void);
 
 /** Convert \p from_len bytes at \p from_buf into a hex representation in \p
  * to_buf, which must be twice as long plus one byte for the null terminator. */
-void rs_hexify(char *to_buf, void const *from_buf, int from_len);
+void rs_hexify(char *to_buf, void const *from_buf, size_t from_len);
 
 /** Decode a base64 buffer in place.
  *
@@ -218,7 +218,7 @@ typedef struct rs_stats {
  * \sa rs_mdfour(), rs_mdfour_begin(), rs_mdfour_update(), rs_mdfour_result() */
 typedef struct rs_mdfour rs_mdfour_t;
 
-extern const int RS_MD4_SUM_LENGTH, RS_BLAKE2_SUM_LENGTH;
+extern const uint32_t RS_MD4_SUM_LENGTH, RS_BLAKE2_SUM_LENGTH;
 
 #  define RS_MAX_STRONG_SUM_LENGTH 32
 
@@ -394,7 +394,7 @@ rs_result rs_job_free(rs_job_t *);
  * at zero to get the full strength.
  *
  * \sa rs_sig_file() */
-rs_job_t *rs_sig_begin(size_t new_block_len, size_t strong_sum_len,
+rs_job_t *rs_sig_begin(uint32_t new_block_len, uint32_t strong_sum_len,
                        rs_magic_number sig_magic);
 
 /** Prepare to compute a streaming delta.
@@ -456,7 +456,7 @@ rs_job_t *rs_patch_begin(rs_copy_cb * copy_cb, void *copy_arg);
  * The default 0 means use the recommended buffer size for the operation being
  * performed, any other value will override the recommended sizes. You probably
  * only need to change these in testing. */
-extern int rs_inbuflen, rs_outbuflen;
+extern size_t rs_inbuflen, rs_outbuflen;
 
 /** Generate the signature of a basis file, and write it out to another.
  *
@@ -473,8 +473,8 @@ extern int rs_inbuflen, rs_outbuflen;
  * \param stats Optional pointer to receive statistics.
  *
  * \sa \ref api_whole */
-rs_result rs_sig_file(FILE *old_file, FILE *sig_file, size_t block_len,
-                      size_t strong_len, rs_magic_number sig_magic,
+rs_result rs_sig_file(FILE *old_file, FILE *sig_file, uint32_t block_len,
+                      uint32_t strong_len, rs_magic_number sig_magic,
                       rs_stats_t *stats);
 
 /** Load signatures from a signature file into memory.

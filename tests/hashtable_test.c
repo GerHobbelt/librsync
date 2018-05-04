@@ -27,19 +27,19 @@
 #include "hashtable.h"
 
 /* Key type for the hashtable. */
-typedef int mykey_t;
-void mykey_init(mykey_t *k, int i)
+typedef unsigned int mykey_t;
+static void mykey_init(mykey_t *k, unsigned int i)
 {
     /* This is chosen to cause bad key collisions and clustering. */
     *k = (i / 2) * (i / 2);
 }
 
-int mykey_hash(const mykey_t *k)
+static mykey_t mykey_hash(const mykey_t *k)
 {
     return *k;
 }
 
-int mykey_cmp(mykey_t *k, const mykey_t *o)
+static mykey_t mykey_cmp(mykey_t *k, const mykey_t *o)
 {
     return *k - *o;
 }
@@ -47,10 +47,10 @@ int mykey_cmp(mykey_t *k, const mykey_t *o)
 /* Entry type for values in hashtable. */
 typedef struct myentry {
     mykey_t key;                  /* Inherit from mykey_t. */
-    int value;
+    unsigned int value;
 } myentry_t;
 
-void myentry_init(myentry_t *e, int i)
+static void myentry_init(myentry_t *e, unsigned int i)
 {
     mykey_init(&e->key, i);
     e->value = i;
@@ -62,20 +62,20 @@ void myentry_init(myentry_t *e, int i)
  * expected value only when the key matches. */
 typedef struct mymatch {
     mykey_t key;                  /* Inherit from mykey_t. */
-    int value;
-    int source;
+    unsigned int value;
+    unsigned int source;
 } mymatch_t;
 
-void mymatch_init(mymatch_t *m, int i)
+static void mymatch_init(mymatch_t *m, unsigned int i)
 {
     mykey_init(&m->key, i);
     m->value = 0;
     m->source = i;
 }
 
-int mymatch_cmp(mymatch_t *m, const myentry_t *e)
+static mykey_t mymatch_cmp(mymatch_t *m, const myentry_t *e)
 {
-    int ans = mykey_cmp(&m->key, &e->key);
+    mykey_t ans = mykey_cmp(&m->key, &e->key);
     /* Calculate and compare value if key matches */
     if (ans == 0) {
         if (m->value != m->source)
@@ -105,6 +105,8 @@ int main(int argc, char **argv)
     hashtable_iter_t ki;
     mykey_t k1, k2;
 
+    (void) (argc && argv);
+
     mykey_init(&k1, 1);
     mykey_init(&k2, 2);
     assert((kt = mykey_hashtable_new(16)) != NULL);
@@ -114,12 +116,13 @@ int main(int argc, char **argv)
     assert(mykey_hashtable_iter(&ki, kt) == &k1);
     assert(mykey_hashtable_next(&ki) == NULL);
 
-    /* Test myhashtable instance. */
+    /* Test myhashtable instance. */ {
+        
     hashtable_t *t;
     myentry_t entry[256];
     myentry_t e;
     mymatch_t m;
-    int i;
+    unsigned int i;
 
     myentry_init(&e, 0);
     for (i = 0; i < 256; i++)
@@ -162,17 +165,39 @@ int main(int argc, char **argv)
     assert(t->hashcmp_count == 0);
     assert(t->entrycmp_count == 0);
 #endif
-
-    /* Test hashtable iterators */
+        
+    }
+    /* Test hashtable iterators */ {
+        
+    hashtable_t *t;
+    myentry_t entry[256];
+    myentry_t e;
     myentry_t *p;
     hashtable_iter_t iter;
+    unsigned int i;
     int count = 0;
+
+    myentry_init(&e, 0);
+    for (i = 0; i < 256; i++)
+        myentry_init(&entry[i], i);
+    t = myhashtable_new(256);
+    assert(t->size == 512);
+    assert(t->count == 0);
+    assert(t->etable != NULL);
+    assert(t->ktable != NULL);
+    assert(myhashtable_add(t, &e) == &e); /* Added duplicated copy. */
+    assert(myhashtable_add(t, &entry[0]) == &entry[0]);   /* Added duplicated instance. */
+    for (i = 0; i < 256; i++)
+        assert(myhashtable_add(t, &entry[i]) == &entry[i]);
+    assert(t->count == 258);
     for (p = myhashtable_iter(&iter, t); p != NULL; p = myhashtable_next(&iter)) {
         assert(p == &e || (&entry[0] <= p && p <= &entry[255]));
         count++;
     }
     assert(count == 258);
     myhashtable_free(t);
+        
+    }
 
     return 0;
 }

@@ -40,6 +40,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -162,31 +163,29 @@ static void rs_mdfour64(rs_mdfour_t *m, const void *p)
  * instead. */
 inline static void copy4( /* @out@ */ unsigned char *out, uint32_t const x)
 {
-    out[0] = x;
-    out[1] = x >> 8;
-    out[2] = x >> 16;
-    out[3] = x >> 24;
+    out[0] = (unsigned char) x;
+    out[1] = (unsigned char) (x >> 8);
+    out[2] = (unsigned char) (x >> 16);
+    out[3] = (unsigned char) (x >> 24);
 }
 
-/* We need this if there is a uint64 */
-/* --robert.weber@Colorado.edu */
-#ifdef HAVE_UINT64
-inline static void copy8( /* @out@ */ unsigned char *out, uint64_t const x)
+inline static void
+copy8( /* @out@ */ unsigned char *out, uint64_t const x)
 {
-    out[0] = x;
-    out[1] = x >> 8;
-    out[2] = x >> 16;
-    out[3] = x >> 24;
-    out[4] = x >> 32;
-    out[5] = x >> 40;
-    out[6] = x >> 48;
-    out[7] = x >> 56;
+    out[0] = (unsigned char) x;
+    out[1] = (unsigned char) (x >> 8);
+    out[2] = (unsigned char) (x >> 16);
+    out[3] = (unsigned char) (x >> 24);
+    out[4] = (unsigned char) (x >> 32);
+    out[5] = (unsigned char) (x >> 40);
+    out[6] = (unsigned char) (x >> 48);
+    out[7] = (unsigned char) (x >> 56);
 }
-#endif                          /* HAVE_UINT64 */
 
 /* We only need this if we are big-endian */
-#ifdef WORDS_BIGENDIAN
-inline static void copy64( /* @out@ */ uint32_t *M, unsigned char const *in)
+#ifdef __BIG_ENDIAN__
+inline static void
+copy64( /* @out@ */ uint32_t *M, unsigned char const *in)
 {
     int i = 16;
 
@@ -206,7 +205,7 @@ inline static void rs_mdfour_block(rs_mdfour_t *md, void const *p)
     rs_mdfour64(md, M);
 }
 
-#else                           /* WORDS_BIGENDIAN */
+#else /* not __BIG_ENDIAN__ */
 
 #  ifdef __i386__
 
@@ -216,7 +215,7 @@ inline static void rs_mdfour_block(rs_mdfour_t *md, void const *p)
     rs_mdfour64(md, p);
 }
 
-#  else                         /* !WORDS_BIGENDIAN && !__i386__ */
+#  else                         /* !__BIG_ENDIAN__ && !__i386__ */
 
 /* We are little-endian, but not on i386 and therefore may not be able to do
    unaligned access safely/quickly.
@@ -238,7 +237,7 @@ inline static void rs_mdfour_block(rs_mdfour_t *md, void const *p)
 }
 
 #  endif                        /* !__i386__ */
-#endif                          /* WORDS_BIGENDIAN */
+#endif                          /* __BIG_ENDIAN__ */
 
 void rs_mdfour_begin(rs_mdfour_t *md)
 {
@@ -247,11 +246,7 @@ void rs_mdfour_begin(rs_mdfour_t *md)
     md->B = 0xefcdab89;
     md->C = 0x98badcfe;
     md->D = 0x10325476;
-#if HAVE_UINT64
     md->totalN = 0;
-#else
-    md->totalN_hi = md->totalN_lo = 0;
-#endif
 }
 
 /** Handle special behaviour for processing the last block of a file when
@@ -263,30 +258,19 @@ void rs_mdfour_begin(rs_mdfour_t *md)
  * = 512 MB. --Robert.Weber@colorado.edu */
 static void rs_mdfour_tail(rs_mdfour_t *m)
 {
-#ifdef HAVE_UINT64
-    uint64_t b;
-#else                           /* HAVE_UINT64 */
-    uint32_t b[2];
-#endif                          /* HAVE_UINT64 */
-    unsigned char buf[8];
-    size_t pad_len;
+    uint64_t         b;
+    unsigned char   buf[8];
+    size_t          pad_len;
 
     /* convert the totalN byte count into a bit count buffer */
-#ifdef HAVE_UINT64
     b = m->totalN << 3;
     copy8(buf, b);
-#else                           /* HAVE_UINT64 */
-    b[0] = m->totalN_lo << 3;
-    b[1] = ((m->totalN_hi << 3) | (m->totalN_lo >> 29));
-    copy4(buf, b[0]);
-    copy4(buf + 4, b[1]);
-#endif                          /* HAVE_UINT64 */
 
     /* calculate length and process the padding data */
     pad_len = (m->tail_len < 56) ? (56 - m->tail_len) : (120 - m->tail_len);
     rs_mdfour_update(m, PADDING, pad_len);
     /* process the bit count */
-    rs_mdfour_update(m, buf, 8);
+    rs_mdfour_update(m, buf, (size_t) 8);
 }
 
 void rs_mdfour_update(rs_mdfour_t *md, void const *in_void, size_t n)
@@ -294,12 +278,7 @@ void rs_mdfour_update(rs_mdfour_t *md, void const *in_void, size_t n)
     unsigned char const *in = (unsigned char const *)in_void;
 
     /* increment totalN */
-#ifdef HAVE_UINT64
     md->totalN += n;
-#else                           /* HAVE_UINT64 */
-    if ((md->totalN_lo += n) < n)
-        md->totalN_hi++;
-#endif                          /* HAVE_UINT64 */
 
     /* If there's any leftover data in the tail buffer, then first we have to
        make it up to a whole block to process it. */

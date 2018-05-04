@@ -20,16 +20,20 @@
  */
 
 /* Force DEBUG on so that tests can use assert(). */
+/* XXX However since all functions (except RollsumUpdate()) are inlined, the
+ * compiler sees their internals and most assert()s are optimized away anyway */
 #undef NDEBUG
+#include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <assert.h>
+#include <stdlib.h>
 #include "rollsum.h"
 
 /*
  * Test driver for rollsum.
  */
-int main(int argc, char **argv)
+int
+main(void)
 {
     Rollsum r;
     int i;
@@ -73,9 +77,11 @@ int main(int argc, char **argv)
     assert(RollsumDigest(&r) == 0x00000000);
 
     /* Test RollsumUpdate() */
-    for (i = 0; i < 256; i++)
-        buf[i] = i;
+    for (i = 0; i < 256; i++) {
+        buf[i] = (unsigned char) i;
+    }
     RollsumUpdate(&r, buf, 256);
     assert(RollsumDigest(&r) == 0x3a009e80);
-    return 0;
+
+    exit(0);
 }

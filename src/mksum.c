@@ -56,7 +56,7 @@ static rs_result rs_sig_s_header(rs_job_t *job)
 
     if ((result =
          rs_signature_init(sig, job->sig_magic, job->sig_block_len,
-                           job->sig_strong_len, 0)) != RS_DONE)
+                           job->sig_strong_len, (rs_long_t) 0)) != RS_DONE)
         return result;
     rs_squirt_n4(job, sig->magic);
     rs_squirt_n4(job, sig->block_len);
@@ -79,12 +79,12 @@ static rs_result rs_sig_do_block(rs_job_t *job, const void *block, size_t len)
 
     weak_sum = rs_calc_weak_sum(block, len);
     rs_signature_calc_strong_sum(sig, block, len, &strong_sum);
-    rs_squirt_n4(job, weak_sum);
-    rs_tube_write(job, strong_sum, sig->strong_sum_len);
+    rs_squirt_n4(job, (uint32_t) weak_sum);
+    rs_tube_write(job, strong_sum, (size_t) sig->strong_sum_len);
     if (rs_trace_enabled()) {
         char strong_sum_hex[RS_MAX_STRONG_SUM_LENGTH * 2 + 1];
-        rs_hexify(strong_sum_hex, strong_sum, sig->strong_sum_len);
-        rs_trace("sent block: weak=" FMT_WEAKSUM ", strong=%s", weak_sum,
+        rs_hexify(strong_sum_hex, strong_sum, (size_t) sig->strong_sum_len);
+        rs_trace("sent block: weak=%ju, strong=%s", (uintmax_t) weak_sum,
                  strong_sum_hex);
     }
     job->stats.sig_blocks++;
@@ -110,11 +110,11 @@ static rs_result rs_sig_s_generate(rs_job_t *job)
         rs_trace("generate stopped: %s", rs_strerror(result));
         return result;
     }
-    rs_trace("got " FMT_SIZE " byte block", len);
+    rs_trace("got %ju byte block", (uintmax_t) len);
     return rs_sig_do_block(job, block, len);
 }
 
-rs_job_t *rs_sig_begin(size_t new_block_len, size_t strong_sum_len,
+rs_job_t *rs_sig_begin(uint32_t new_block_len, uint32_t strong_sum_len,
                        rs_magic_number sig_magic)
 {
     rs_job_t *job;

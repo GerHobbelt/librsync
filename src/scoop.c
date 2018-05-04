@@ -84,13 +84,14 @@ void rs_scoop_input(rs_job_t *job, size_t len)
         if (job->scoop_buf)
             free(job->scoop_buf);
         job->scoop_buf = job->scoop_next = newbuf;
-        rs_trace("resized scoop buffer to " FMT_SIZE " bytes from " FMT_SIZE "",
-                 newsize, job->scoop_alloc);
+        rs_trace("resized scoop buffer to %ju bytes from %ju",
+                 (uintmax_t) newsize, (uintmax_t) job->scoop_alloc);
         job->scoop_alloc = newsize;
     } else if (job->scoop_buf != job->scoop_next) {
         /* Move existing data to the front of the scoop. */
-        rs_trace("moving scoop " FMT_SIZE " bytes to reuse " FMT_SIZE " bytes",
-                 job->scoop_avail, (size_t)(job->scoop_next - job->scoop_buf));
+        rs_trace("moving scoop %ju bytes to reuse %ju bytes",
+                 (uintmax_t) job->scoop_avail,
+                 (uintmax_t) (job->scoop_next - job->scoop_buf));
         memmove(job->scoop_buf, job->scoop_next, job->scoop_avail);
         job->scoop_next = job->scoop_buf;
     }
@@ -102,7 +103,7 @@ void rs_scoop_input(rs_job_t *job, size_t len)
     assert(tocopy + job->scoop_avail <= job->scoop_alloc);
 
     memcpy(job->scoop_next + job->scoop_avail, stream->next_in, tocopy);
-    rs_trace("accepted " FMT_SIZE " bytes from input to scoop", tocopy);
+    rs_trace("accepted %ju bytes from input to scoop", (uintmax_t) tocopy);
     job->scoop_avail += tocopy;
     stream->next_in += tocopy;
     stream->avail_in -= tocopy;
@@ -125,12 +126,12 @@ void rs_scoop_advance(rs_job_t *job, size_t len)
        same time. */
     if (job->scoop_avail) {
         /* reading from the scoop buffer */
-        rs_trace("advance over " FMT_SIZE " bytes from scoop", len);
+        rs_trace("advance over %ju bytes from scoop", (uintmax_t) len);
         assert(len <= job->scoop_avail);
         job->scoop_avail -= len;
         job->scoop_next += len;
     } else {
-        rs_trace("advance over " FMT_SIZE " bytes from input buffer", len);
+        rs_trace("advance over %ju bytes from input buffer", (uintmax_t) len);
         assert(len <= stream->avail_in);
         stream->avail_in -= len;
         stream->next_in += len;
@@ -155,18 +156,18 @@ rs_result rs_scoop_readahead(rs_job_t *job, size_t len, void **ptr)
     if (!job->scoop_avail && stream->avail_in >= len) {
         /* The scoop is empty and there's enough data in the input. */
         *ptr = stream->next_in;
-        rs_trace("got " FMT_SIZE " bytes direct from input", len);
+        rs_trace("got %ju bytes direct from input buffer", (uintmax_t) len);
         return RS_DONE;
     } else if (job->scoop_avail < len && stream->avail_in) {
         /* There is not enough data in the scoop. */
-        rs_trace("scoop has less than " FMT_SIZE " bytes, scooping from "
-                 FMT_SIZE " input bytes", len, stream->avail_in);
+        rs_trace("scoop has less than %ju bytes, scooping from %ju input bytes",
+                 (uintmax_t) len, (uintmax_t) stream->avail_in);
         rs_scoop_input(job, len);
     }
     if (job->scoop_avail >= len) {
         /* There is enough data in the scoop now. */
-        rs_trace("scoop has at least " FMT_SIZE " bytes, this is enough",
-                 job->scoop_avail);
+        rs_trace("scoop has at least %ju bytes, this is enough",
+                 (uintmax_t) job->scoop_avail);
         *ptr = job->scoop_next;
         return RS_DONE;
     } else if (stream->eof_in) {

@@ -47,8 +47,8 @@ static rs_result rs_loadsig_add_sum(rs_job_t *job, rs_strong_sum_t *strong)
 
     if (rs_trace_enabled()) {
         char hexbuf[RS_MAX_STRONG_SUM_LENGTH * 2 + 2];
-        rs_hexify(hexbuf, strong, sig->strong_sum_len);
-        rs_trace("got block: weak=" FMT_WEAKSUM ", strong=%s", job->weak_sig,
+        rs_hexify(hexbuf, strong, (size_t) sig->strong_sum_len);
+        rs_trace("got block: weak=%ju, strong=%s", (uintmax_t) job->weak_sig,
                  hexbuf);
     }
     rs_signature_add_block(job->signature, job->weak_sig, strong);
@@ -58,7 +58,7 @@ static rs_result rs_loadsig_add_sum(rs_job_t *job, rs_strong_sum_t *strong)
 
 static rs_result rs_loadsig_s_weak(rs_job_t *job)
 {
-    int l;
+    uint32_t l;
     rs_result result;
 
     if ((result = rs_suck_n4(job, &l)) != RS_DONE) {
@@ -77,7 +77,7 @@ static rs_result rs_loadsig_s_strong(rs_job_t *job)
     rs_strong_sum_t *strongsum;
 
     if ((result =
-         rs_scoop_read(job, job->signature->strong_sum_len,
+         rs_scoop_read(job, (size_t) job->signature->strong_sum_len,
                        (void **)&strongsum)) != RS_DONE)
         return result;
     job->statefn = rs_loadsig_s_weak;
@@ -86,12 +86,12 @@ static rs_result rs_loadsig_s_strong(rs_job_t *job)
 
 static rs_result rs_loadsig_s_stronglen(rs_job_t *job)
 {
-    int l;
+    uint32_t l;
     rs_result result;
 
     if ((result = rs_suck_n4(job, &l)) != RS_DONE)
         return result;
-    if (l < 0 || l > RS_MAX_STRONG_SUM_LENGTH) {
+    if (l > RS_MAX_STRONG_SUM_LENGTH) {
         rs_error("strong sum length %d is implausible", l);
         return RS_CORRUPT;
     }
@@ -108,7 +108,7 @@ static rs_result rs_loadsig_s_stronglen(rs_job_t *job)
 
 static rs_result rs_loadsig_s_blocklen(rs_job_t *job)
 {
-    int l;
+    uint32_t l;
     rs_result result;
 
     if ((result = rs_suck_n4(job, &l)) != RS_DONE)
@@ -126,7 +126,7 @@ static rs_result rs_loadsig_s_blocklen(rs_job_t *job)
 
 static rs_result rs_loadsig_s_magic(rs_job_t *job)
 {
-    int l;
+    uint32_t l;
     rs_result result;
 
     if ((result = rs_suck_n4(job, &l)) != RS_DONE)

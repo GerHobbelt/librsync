@@ -31,9 +31,6 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#ifdef HAVE_UNISTD_H
-#  include <unistd.h>
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -49,7 +46,7 @@
 #include "util.h"
 
 /** Whole file IO buffer sizes. */
-int rs_inbuflen = 0, rs_outbuflen = 0;
+size_t rs_inbuflen = 0, rs_outbuflen = 0;
 
 /** Run a job continuously, with input to/from the two specified files.
  *
@@ -67,7 +64,7 @@ int rs_inbuflen = 0, rs_outbuflen = 0;
  *
  * \return RS_DONE if the job completed, or otherwise an error result. */
 rs_result rs_whole_run(rs_job_t *job, FILE *in_file, FILE *out_file,
-                       int inbuflen, int outbuflen)
+                       size_t inbuflen, size_t outbuflen)
 {
     rs_buffers_t buf;
     rs_result result;
@@ -90,8 +87,8 @@ rs_result rs_whole_run(rs_job_t *job, FILE *in_file, FILE *out_file,
     return result;
 }
 
-rs_result rs_sig_file(FILE *old_file, FILE *sig_file, size_t new_block_len,
-                      size_t strong_len, rs_magic_number sig_magic,
+rs_result rs_sig_file(FILE *old_file, FILE *sig_file, uint32_t new_block_len,
+                      uint32_t strong_len, rs_magic_number sig_magic,
                       rs_stats_t *stats)
 {
     rs_job_t *job;
@@ -99,8 +96,8 @@ rs_result rs_sig_file(FILE *old_file, FILE *sig_file, size_t new_block_len,
 
     job = rs_sig_begin(new_block_len, strong_len, sig_magic);
     /* Size inbuf for 4 blocks, outbuf for header + 4 blocksums. */
-    r = rs_whole_run(job, old_file, sig_file, 4 * new_block_len,
-                     12 + 4 * (4 + strong_len));
+    r = rs_whole_run(job, old_file, sig_file, (size_t) 4 * new_block_len,
+                     (size_t) 12 + 4 * (4 + strong_len));
     if (stats)
         memcpy(stats, &job->stats, sizeof *stats);
     rs_job_free(job);
@@ -113,12 +110,14 @@ rs_result rs_loadsig_file(FILE *sig_file, rs_signature_t **sumset,
 {
     rs_job_t *job;
     rs_result r;
+    off_t fsize;
 
     job = rs_loadsig_begin(sumset);
     /* Estimate a number of signatures by file size */
-    rs_get_filesize(sig_file, &job->sig_fsize);
+    rs_get_filesize(sig_file, &fsize);
+    job->sig_fsize = (rs_long_t) fsize;
     /* Size inbuf for 1024x 16 byte blocksums. */
-    r = rs_whole_run(job, sig_file, NULL, 1024 * 16, 0);
+    r = rs_whole_run(job, sig_file, NULL, (size_t) 1024 * 16, (size_t) 0);
     if (stats)
         memcpy(stats, &job->stats, sizeof *stats);
     rs_job_free(job);
@@ -134,8 +133,8 @@ rs_result rs_delta_file(rs_signature_t *sig, FILE *new_file, FILE *delta_file,
 
     job = rs_delta_begin(sig);
     /* Size inbuf for 1 block, outbuf for literal cmd + 4 blocks. */
-    r = rs_whole_run(job, new_file, delta_file, sig->block_len,
-                     10 + 4 * sig->block_len);
+    r = rs_whole_run(job, new_file, delta_file, (size_t) sig->block_len,
+                     (size_t) 10 + 4 * sig->block_len);
     if (stats)
         memcpy(stats, &job->stats, sizeof *stats);
     rs_job_free(job);
@@ -150,7 +149,7 @@ rs_result rs_patch_file(FILE *basis_file, FILE *delta_file, FILE *new_file,
 
     job = rs_patch_begin(rs_file_copy_cb, basis_file);
     /* Default size inbuf and outbuf 64K. */
-    r = rs_whole_run(job, delta_file, new_file, 64 * 1024, 64 * 1024);
+    r = rs_whole_run(job, delta_file, new_file, (size_t) 64 * 1024, (size_t) 64 * 1024);
     if (stats)
         memcpy(stats, &job->stats, sizeof *stats);
     rs_job_free(job);

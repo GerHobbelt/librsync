@@ -34,18 +34,18 @@
 #define HASHTABLE_LOADFACTOR_NUM 8
 #define HASHTABLE_LOADFACTOR_DEN 10
 
-hashtable_t *_hashtable_new(int size)
+hashtable_t *_hashtable_new(size_t size)
 {
     hashtable_t *t;
-    int size2;
+    size_t size2;
 
     /* Adjust requested size to account for max load factor. */
     size = 1 + size * HASHTABLE_LOADFACTOR_DEN / HASHTABLE_LOADFACTOR_NUM;
     /* Use next power of 2 larger than the requested size. */
     for (size2 = 1; size2 < size; size2 <<= 1) ;
-    if (!(t = calloc(1, sizeof(hashtable_t)+ size2 * sizeof(unsigned))))
+    if (!(t = calloc((size_t) 1, sizeof(hashtable_t)+ size2 * sizeof(unsigned))))
         return NULL;
-    if (!(t->etable = calloc(size2, sizeof(void *)))) {
+    if (!(t->etable = calloc((size_t) size2, sizeof(void *)))) {
         free(t);
         return NULL;
     }
@@ -76,10 +76,11 @@ void *_hashtable_iter(hashtable_iter_t *i, hashtable_t *t)
 
 void *_hashtable_next(hashtable_iter_t *i)
 {
-    assert(i->htable != NULL);
-    assert(i->index <= i->htable->size);
     const hashtable_t *t = i->htable;
     void *e;
+
+    assert(i->htable != NULL);
+    assert(i->index <= i->htable->size);
 
     while (i->index < t->size) {
         if ((e = t->etable[i->index++]))

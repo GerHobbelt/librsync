@@ -104,7 +104,7 @@ rs_result rs_infilebuf_fill(rs_job_t *job, rs_buffers_t *buf, void *opaque)
         /* Still some data remaining. Perhaps we should read anyhow? */
         return RS_DONE;
 
-    len = fread(fb->buf, 1, fb->buf_len, f);
+    len = fread(fb->buf, (size_t) 1, fb->buf_len, f);
     if (len <= 0) {
         /* This will happen if file size is a multiple of input block len */
         if (feof(f)) {
@@ -116,8 +116,7 @@ rs_result rs_infilebuf_fill(rs_job_t *job, rs_buffers_t *buf, void *opaque)
             rs_error("error filling buf from file: %s", strerror(errno));
             return RS_IO_ERROR;
         } else {
-            rs_error("no error bit, but got " FMT_SIZE
-                     " return when trying to read", len);
+            rs_error("no error bit, but got %ju return when trying to read", (uintmax_t) len);
             return RS_IO_ERROR;
         }
     }
@@ -133,7 +132,7 @@ rs_result rs_infilebuf_fill(rs_job_t *job, rs_buffers_t *buf, void *opaque)
    some buffered output now. Write this out to F, and reset the buffer cursor. */
 rs_result rs_outfilebuf_drain(rs_job_t *job, rs_buffers_t *buf, void *opaque)
 {
-    int present;
+    ptrdiff_t present;
     rs_filebuf_t *fb = (rs_filebuf_t *)opaque;
     FILE *f = fb->f;
 
@@ -154,12 +153,10 @@ rs_result rs_outfilebuf_drain(rs_job_t *job, rs_buffers_t *buf, void *opaque)
 
     present = buf->next_out - fb->buf;
     if (present > 0) {
-        int result;
+        size_t result;
 
-        assert(present > 0);
-
-        result = fwrite(fb->buf, 1, present, f);
-        if (present != result) {
+        result = fwrite(fb->buf, (size_t) 1, (size_t) present, f);
+        if ((size_t) present != result) {
             rs_error("error draining buf to file: %s", strerror(errno));
             return RS_IO_ERROR;
         }

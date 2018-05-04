@@ -32,7 +32,7 @@
 
 typedef struct rs_prototab_ent {
     enum rs_op_kind kind;
-    int immediate;
+    rs_long_t immediate;
     size_t len_1, len_2;
 } rs_prototab_ent_t;
 

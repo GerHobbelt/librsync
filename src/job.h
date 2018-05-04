@@ -39,9 +39,9 @@ struct rs_job {
 
     /* Arguments for initializing the signature used by mksum.c and readsums.c.
      */
-    int sig_magic;
-    int sig_block_len;
-    int sig_strong_len;
+    uint32_t sig_magic;
+    uint32_t sig_block_len;
+    uint32_t sig_strong_len;
 
     /** The size of the signature file if available. Used by loadsums.c when
      * initializing the signature to preallocate memory. */
@@ -82,7 +82,7 @@ struct rs_job {
 
     /** If USED is >0, then buf contains that much write data to be sent out. */
     rs_byte_t write_buf[36];
-    int write_len;
+    size_t write_len;
 
     /** If \p copy_len is >0, then that much data should be copied through
      * from the input. */

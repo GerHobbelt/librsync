@@ -96,21 +96,21 @@
  * This always does the copy immediately. Most functions should call
  * rs_tube_copy() to cause the copy to happen gradually as space becomes
  * available. */
-int rs_buffers_copy(rs_buffers_t *stream, int max_len)
+size_t rs_buffers_copy(rs_buffers_t *stream, size_t max_len)
 {
-    int len = max_len;
+    size_t len = max_len;
 
     assert(len > 0);
 
     if ((unsigned)len > stream->avail_in) {
-        rs_trace("copy limited to " FMT_SIZE " available input bytes",
-                 stream->avail_in);
+        rs_trace("copy limited to %ju available input bytes",
+                 (uintmax_t) stream->avail_in);
         len = stream->avail_in;
     }
 
     if ((unsigned)len > stream->avail_out) {
-        rs_trace("copy limited to " FMT_SIZE " available output bytes",
-                 stream->avail_out);
+        rs_trace("copy limited to %ju available output bytes",
+                 (uintmax_t) stream->avail_out);
         len = stream->avail_out;
     }
 

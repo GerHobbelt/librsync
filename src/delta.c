@@ -147,14 +147,13 @@ static rs_result rs_delta_s_scan(rs_job_t *job)
             /* rotate the weak_sum and append the miss byte */
             RollsumRotate(&job->weak_sum, job->scoop_next[job->scoop_pos],
                           job->scoop_next[job->scoop_pos + block_len]);
-            result = rs_appendmiss(job, 1);
+            result = rs_appendmiss(job, (size_t) 1);
             if (rs_roll_paranoia) {
                 RollsumInit(&test);
                 RollsumUpdate(&test, job->scoop_next + job->scoop_pos,
                               block_len);
                 if (RollsumDigest(&test) != RollsumDigest(&job->weak_sum)) {
-                    rs_fatal("mismatch between rolled sum " FMT_WEAKSUM
-                             " and check " FMT_WEAKSUM "",
+                    rs_fatal("mismatch between rolled sum %x and check %x",
                              RollsumDigest(&job->weak_sum),
                              RollsumDigest(&test));
                 }
@@ -197,8 +196,8 @@ static rs_result rs_delta_s_flush(rs_job_t *job)
         } else {
             /* rollout from weak_sum and append the miss byte */
             RollsumRollout(&job->weak_sum, job->scoop_next[job->scoop_pos]);
-            rs_trace("block reduced to " FMT_SIZE "", job->weak_sum.count);
-            result = rs_appendmiss(job, 1);
+            rs_trace("block reduced to %ju", (uintmax_t) job->weak_sum.count);
+            result = rs_appendmiss(job, (size_t) 1);
         }
     }
     /* if we are not blocked, flush and set end statefn. */
@@ -252,8 +251,8 @@ static inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos,
         /* Update the weak_sum */
         RollsumUpdate(&job->weak_sum, job->scoop_next + job->scoop_pos,
                       *match_len);
-        rs_trace("calculate weak sum from scratch length " FMT_SIZE "",
-                 job->weak_sum.count);
+        rs_trace("calculate weak sum from scratch length %ju",
+                 (uintmax_t) job->weak_sum.count);
     } else {
         /* set the match_len to the weak_sum count */
         *match_len = job->weak_sum.count;
@@ -261,7 +260,7 @@ static inline int rs_findmatch(rs_job_t *job, rs_long_t *match_pos,
     *match_pos =
         rs_signature_find_match(job->signature, RollsumDigest(&job->weak_sum),
                                 job->scoop_next + job->scoop_pos, *match_len);
-    return *match_pos != -1;
+    return *match_pos != (rs_long_t) -1;
 }
 
 /** Append a match at match_pos of length match_len to the delta, extending a
@@ -315,14 +314,14 @@ static inline rs_result rs_appendflush(rs_job_t *job)
 {
     /* if last is a match, emit it and reset last by resetting basis_len */
     if (job->basis_len) {
-        rs_trace("matched " FMT_LONG " bytes at " FMT_LONG "!", job->basis_len,
-                 job->basis_pos);
+        rs_trace("matched %ju bytes at %ju!", (uintmax_t) job->basis_len,
+                 (uintmax_t) job->basis_pos);
         rs_emit_copy_cmd(job, job->basis_pos, job->basis_len);
         job->basis_len = 0;
         return rs_processmatch(job);
         /* else if last is a miss, emit and process it */
     } else if (job->scoop_pos) {
-        rs_trace("got " FMT_SIZE " bytes of literal data", job->scoop_pos);
+        rs_trace("got %ju bytes of literal data", (uintmax_t) job->scoop_pos);
         rs_emit_literal_cmd(job, job->scoop_pos);
         return rs_processmiss(job);
     }
@@ -377,7 +376,7 @@ static rs_result rs_delta_s_slack(rs_job_t *job)
     size_t avail = stream->avail_in;
 
     if (avail) {
-        rs_trace("emit slack delta for " FMT_SIZE " available bytes", avail);
+        rs_trace("emit slack delta for %ju available bytes", (uintmax_t) avail);
         rs_emit_literal_cmd(job, avail);
         rs_tube_copy(job, avail);
         return RS_RUNNING;

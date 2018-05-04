@@ -13,6 +13,14 @@
    https://blake2.net.
 */
 
+/* This code, but not the algorithm, has been slightly modified for use in 
+ * librsync.
+ */
+
+/* XXX consider replacing with OpenSSL's version */
+
+#include "config.h"
+
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -72,6 +80,7 @@ static void blake2b_increment_counter( blake2b_state *S, const uint64_t inc )
 static void blake2b_init0( blake2b_state *S )
 {
   size_t i;
+
   memset( S, 0, sizeof( blake2b_state ) );
 
   for( i = 0; i < 8; ++i ) S->h[i] = blake2b_IV[i];
@@ -80,7 +89,7 @@ static void blake2b_init0( blake2b_state *S )
 /* init xors IV with input parameter block */
 int blake2b_init_param( blake2b_state *S, const blake2b_param *P )
 {
-  const uint8_t *p = ( const uint8_t * )( P );
+  const uint8_t *p = ( const uint8_t * )( P ); /* xxx pointer cast! */
   size_t i;
 
   blake2b_init0( S );
@@ -142,10 +151,10 @@ int blake2b_init_key( blake2b_state *S, size_t outlen, const void *key, size_t k
 
   {
     uint8_t block[BLAKE2B_BLOCKBYTES];
-    memset( block, 0, BLAKE2B_BLOCKBYTES );
+    memset( block, 0, (size_t) BLAKE2B_BLOCKBYTES );
     memcpy( block, key, keylen );
-    blake2b_update( S, block, BLAKE2B_BLOCKBYTES );
-    secure_zero_memory( block, BLAKE2B_BLOCKBYTES ); /* Burn the key from stack */
+    blake2b_update( S, block, (uint64_t) BLAKE2B_BLOCKBYTES );
+    secure_zero_memory( block, (size_t) BLAKE2B_BLOCKBYTES ); /* Burn the key from stack */
   }
   return 0;
 }
@@ -229,11 +238,11 @@ int blake2b_update( blake2b_state *S, const void *pin, size_t inlen )
     {
       S->buflen = 0;
       memcpy( S->buf + left, in, fill ); /* Fill buffer */
-      blake2b_increment_counter( S, BLAKE2B_BLOCKBYTES );
+      blake2b_increment_counter( S, (uint64_t) BLAKE2B_BLOCKBYTES );
       blake2b_compress( S, S->buf ); /* Compress */
       in += fill; inlen -= fill;
       while(inlen > BLAKE2B_BLOCKBYTES) {
-        blake2b_increment_counter(S, BLAKE2B_BLOCKBYTES);
+        blake2b_increment_counter(S, (uint64_t) BLAKE2B_BLOCKBYTES);
         blake2b_compress( S, in );
         in += BLAKE2B_BLOCKBYTES;
         inlen -= BLAKE2B_BLOCKBYTES;

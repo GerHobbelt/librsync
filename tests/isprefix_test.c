@@ -30,7 +30,7 @@
 /*
  * Test driver for isprefix.
  */
-int main(int argc, char **argv)
+int main(void)
 {
     assert(isprefix("foo", "foobar"));
     assert(isprefix("", "foobar"));

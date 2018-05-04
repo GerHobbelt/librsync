@@ -66,7 +66,7 @@
 static void rs_tube_catchup_write(rs_job_t *job)
 {
     rs_buffers_t *stream = job->stream;
-    int len, remain;
+    size_t len, remain;
 
     len = job->write_len;
     assert(len > 0);
@@ -80,17 +80,17 @@ static void rs_tube_catchup_write(rs_job_t *job)
         return;
     }
 
-    memcpy(stream->next_out, job->write_buf, len);
+    memcpy(stream->next_out, job->write_buf, (size_t) len);
     stream->next_out += len;
     stream->avail_out -= len;
 
     remain = job->write_len - len;
-    rs_trace("transmitted %d write bytes from tube, %d remain to be sent", len,
-             remain);
+    rs_trace("transmitted %ju write bytes from tube, %ju remain to be sent",
+             (uintmax_t) len, (uintmax_t) remain);
 
     if (remain > 0) {
         /* Still something left in the tube... */
-        memmove(job->write_buf, job->write_buf + len, remain);
+	    memmove(job->write_buf, job->write_buf + len, (size_t) remain);
     } else {
         assert(remain == 0);
     }
@@ -121,9 +121,9 @@ static void rs_tube_copy_from_scoop(rs_job_t *job)
 
     job->copy_len -= this_len;
 
-    rs_trace("caught up on " FMT_SIZE " copied bytes from scoop, " FMT_SIZE
-             " remain there, " FMT_LONG " remain to be copied", this_len,
-             job->scoop_avail, job->copy_len);
+    rs_trace("caught up on %ju copied bytes from scoop, %ju remain there, %ju remain to be copied",
+             (uintmax_t) this_len,
+             (uintmax_t) job->scoop_avail, (uintmax_t) job->copy_len);
 }
 
 /** Catch up on an outstanding copy command.
@@ -143,8 +143,9 @@ static void rs_tube_catchup_copy(rs_job_t *job)
     if (job->copy_len && !job->scoop_avail) {
         size_t this_copy = rs_buffers_copy(job->stream, job->copy_len);
         job->copy_len -= this_copy;
-        rs_trace("copied " FMT_SIZE " bytes from input buffer, " FMT_LONG
-                 " remain to be copied", this_copy, job->copy_len);
+
+        rs_trace("copied %ju bytes from input buffer, %ju remain to be copied",
+                 (uintmax_t) this_copy, (uintmax_t) job->copy_len);
     }
 }
 
@@ -194,7 +195,7 @@ int rs_tube_is_idle(rs_job_t const *job)
  * \todo Try to do the copy immediately, and return a result. Then, people can
  * try to continue if possible. Is this really required? Callers can just go
  * out and back in again after flushing the tube. */
-void rs_tube_copy(rs_job_t *job, int len)
+void rs_tube_copy(rs_job_t *job, size_t len)
 {
     assert(job->copy_len == 0);
 
@@ -213,7 +214,7 @@ void rs_tube_write(rs_job_t *job, const void *buf, size_t len)
     assert(job->copy_len == 0);
 
     if (len > sizeof(job->write_buf) - job->write_len) {
-        rs_fatal("tube popped when trying to write " FMT_SIZE " bytes!", len);
+        rs_fatal("tube popped when trying to write %ju bytes!", (uintmax_t) len);
     }
 
     memcpy(job->write_buf + job->write_len, buf, len);

@@ -20,4 +20,4 @@
  */
 
 rs_result rs_whole_run(rs_job_t *job, FILE *in_file, FILE *out_file,
-                       int inbuflen, int outbuflen);
+                       size_t inbuflen, size_t outbuflen);

@@ -25,9 +25,11 @@
 #  include <stddef.h>
 #  include <stdint.h>
 
-/* We should make this something other than zero to improve the checksum
-   algorithm: tridge suggests a prime number. */
-#  define ROLLSUM_CHAR_OFFSET 31
+/* We should make this something other than zero to improve the
+ * checksum algorithm: tridge suggests a prime number. */
+enum {
+    ROLLSUM_CHAR_OFFSET = 31U,
+};
 
 /** The Rollsum struct type \private. */
 typedef struct _Rollsum {
@@ -45,24 +47,27 @@ static inline void RollsumInit(Rollsum *sum)
     sum->count = sum->s1 = sum->s2 = 0;
 }
 
+/* xxx FixMe:  never, ever, use anything smaller than sizeof(int) as a parameter!!!! */
 static inline void RollsumRotate(Rollsum *sum, unsigned char out,
                                  unsigned char in)
 {
-    sum->s1 += in - out;
-    sum->s2 += sum->s1 - sum->count * (out + ROLLSUM_CHAR_OFFSET);
+    sum->s1 += (uint_fast16_t) (in - out);
+    sum->s2 += sum->s1 - (uint_fast16_t) sum->count * ((uint_fast16_t) out + ROLLSUM_CHAR_OFFSET);
 }
 
+/* xxx FixMe:  never, ever, use anything smaller than sizeof(int) as a parameter!!!! */
 static inline void RollsumRollin(Rollsum *sum, unsigned char in)
 {
-    sum->s1 += in + ROLLSUM_CHAR_OFFSET;
+    sum->s1 += (uint_fast16_t) in + ROLLSUM_CHAR_OFFSET;
     sum->s2 += sum->s1;
     sum->count++;
 }
 
+/* xxx FixMe:  never, ever, use anything smaller than sizeof(int) as a parameter!!!! */
 static inline void RollsumRollout(Rollsum *sum, unsigned char out)
 {
-    sum->s1 -= out + ROLLSUM_CHAR_OFFSET;
-    sum->s2 -= sum->count * (out + ROLLSUM_CHAR_OFFSET);
+    sum->s1 -= (uint_fast16_t) out + ROLLSUM_CHAR_OFFSET;
+    sum->s2 -= (uint_fast16_t) sum->count * ((uint_fast16_t) out + ROLLSUM_CHAR_OFFSET);
     sum->count--;
 }
 

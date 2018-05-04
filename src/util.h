@@ -20,20 +20,40 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-void *rs_alloc(size_t size, char const *name);
-void *rs_realloc(void *ptr, size_t size, char const *name);
-void *rs_alloc_struct0(size_t size, char const *name);
+void *rs_alloc_(size_t size, char const *name,
+                const char *file, int line, const char *func);
+void *rs_realloc_(void *ptr, size_t nsize, char const *name,
+                  const char *file, int line, const char *func);
+void *rs_alloc_struct0_(size_t size, char const *name,
+                        const char *file, int line, const char *func);
 
 void rs_bzero(void *buf, size_t size);
 
-/** Allocate and zero-fill an instance of TYPE. */
-#define rs_alloc_struct(type)				\
-        ((type *) rs_alloc_struct0(sizeof(type), #type))
 
-#ifdef __GNUC__
-#  define UNUSED(x) x __attribute__((unused))
-#elif defined(__LCLINT__) || defined(S_SPLINT_S)
-#  define UNUSED(x) /*@unused@*/ x
-#else                           /* !__GNUC__ && !__LCLINT__ */
-#  define UNUSED(x) x
-#endif                          /* !__GNUC__ && !__LCLINT__ */
+#if (defined(__linux__) ||                                              \
+        defined(__APPLE__) ||                                           \
+        defined(__Darwin__) ||                                          \
+        defined(__NetBSD__) ||                                          \
+        defined(__FreeBSD__) ||                                         \
+        defined(__OpenBSD__) ||                                         \
+        defined(__DragonFly__))
+# include <sys/cdefs.h>
+#endif
+
+#if !defined(__unused)
+# if defined(__lint__) || defined(__LCLINT__) || defined(S_SPLINT_S)
+#  define __unused      /*@unused@*/
+# else	/* assume GCC, Clang, Solaris Studio C, Intel C, IBM XL C, or compatible... */
+#  define __unused	__attribute__((__unused__))
+# endif
+#endif
+
+/** Allocate and zero-fill an instance of TYPE. */
+#define rs_alloc_struct(type)                                           \
+    rs_alloc_struct0_(sizeof(type), #type, __FILE__, __LINE__, __FUNCTION__)
+
+#define rs_alloc(size, name)                                            \
+    rs_alloc_(size, name, __FILE__, __LINE__, __FUNCTION__)
+
+#define rs_realloc(ptr, nsize, name)                                    \
+    rs_realloc_(ptr, nsize, name, __FILE__, __LINE__, __FUNCTION__)

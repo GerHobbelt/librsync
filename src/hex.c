@@ -21,15 +21,13 @@
 
 #include <assert.h>
 #include <sys/types.h>
-#ifdef HAVE_INTTYPES_H
-#  include <inttypes.h>
-#endif
+#include <inttypes.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "librsync.h"
 
-void rs_hexify(char *to_buf, void const *from, int from_len)
+void rs_hexify(char *to_buf, void const *from, size_t from_len)
 {
     static const char hex_chars[] = "0123456789abcdef";
     unsigned char const *from_buf = (unsigned char const *)from;
