@@ -24,6 +24,8 @@ CPPFLAGS +=	-I${.CURDIR}/blake2
 CFLAGS +=	-I${.CURDIR}/blake2
 .endif
 
+INCS += librsync.h
+
 SRCS +=	base64.c
 SRCS +=	blake2/blake2b-ref.c
 SRCS +=	buf.c

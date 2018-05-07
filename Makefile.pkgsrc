@@ -1,10 +1,11 @@
 # -*- makefile-bsdmake -*-
 # $NetBSD$
 
-# N.B.:  though this version of LIBRSYNC is diverging from the original, as yet it
-# has no API (or, so far as is known, ABI) differences, thus is still "2.0.0"
+# N.B.:  although this version of LIBRSYNC is diverging from the original, it
+# does not yet have any API (or, so far as is known, ABI) differences, thus is
+# still "2.0.2"
 
-PKGNAME=	librsync-2.0.0
+PKGNAME=	librsync-2.0.2
 #PKGREVISION=	1
 CATEGORIES=	net sysutils
 DISTFILES=	# empty
@@ -61,6 +62,12 @@ post-build:
 	    -e 's|^Version:.*|Version: ${PKGVERSION}|'			\
 	    < ${WRKSRC}/src/${PKGBASE}.pc.in > ${WRKSRC}/src/${PKGBASE}.pc
 
+# luckily we do not have to "make includes" before building as that goes
+# strongly against the pkgsrc way of doing things, since DESTDIR isn't set in
+# MAKE_FLAGS except for the standard "do-install" target
+#
+INSTALL_TARGET = includes install
+
 post-install:
 	${INSTALL_DATA} ${WRKSRC}/src/${PKGBASE}.pc ${DESTDIR}${PREFIX}/lib/pkgconfig
 
@@ -82,6 +89,7 @@ setup-pkgsrc:
 	${RM} -rf ${FILESDIR}/doc
 	${RM} -rf ${FILESDIR}/src
 	${RM} -rf ${FILESDIR}/tests
+	${MKDIR} ${FILESDIR}/
 	${CP} -R ${REPODIR}/* ${FILESDIR}/
 	${RM} -rf ${FILESDIR}/build ${FILESDIR}/dist
 

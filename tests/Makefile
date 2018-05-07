@@ -7,23 +7,27 @@ bmake_topdir = ..
 # XXX Apple's BSDmake, Simon's BSDmake, etc., don't support PROGS
 
 PROGS += isprefix_test
+proginstall-isprefix_test: .PHONY
 SRCS.isprefix_test = isprefix_test.c
 MAN.isprefix_test =	# empty
 
 PROGS += rollsum_test
+proginstall-rollsum_test: .PHONY
 SRCS.rollsum_test = rollsum_test.c
 MAN.rollsum_test =	# empty
 
 PROGS += hashtable_test
+proginstall-hashtable_test: .PHONY
 SRCS.hashtable_test = hashtable_test.c
 MAN.hashtable_test =	# empty
 
 PROGS += sumset_test
+proginstall-sumset_test: .PHONY
 SRCS.sumset_test = sumset_test.c
 MAN.sumset_test =	# empty
 
-# XXX this needs to be built in its own top-level sub-directory
-# XXX and then it can be linked to here for running the tests?
+# XXX this should be built in its own top-level sub-directory
+# XXX and then it could be linked to here for running the tests...
 PROGS += rdiff
 SRCS.rdiff = ../src/rdiff.c
 .if defined(POPT_INCLUDE)
@@ -48,9 +52,6 @@ LDADD.rdiff += -L${INTL_LIB}
 .endif
 LDADD.rdiff += -lpopt -lintl
 MAN.rdiff =		#empty
-
-# don't install
-proginstall:
 
 regress: .PHONY all
 .for _P in ${PROGS}
