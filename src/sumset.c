@@ -165,6 +165,7 @@ rs_result rs_signature_init(rs_signature_t *sig, uint32_t magic, uint32_t block_
 void rs_signature_done(rs_signature_t *sig)
 {
     hashtable_free(sig->hashtable);
+    free(sig->block_sigs);
     rs_bzero(sig, sizeof(*sig));
 }
 
