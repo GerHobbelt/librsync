@@ -82,25 +82,32 @@ SUBDIR =	src
 # doesn't quite make up for it because of the fact these directories always
 # exist prior to starting make)
 #
-#SUBDIR +=	.WAIT
+# Comment this out if your build blows up (with "XXX ??? XXX")
+#
+SUBDIR +=	.WAIT
 
 SUBDIR +=	doc
 SUBDIR +=	tests
 
 .ORDER: ${SUBDIR}
 
+.PHONY: docs
 TARGETS +=	docs
 
 #
 # The rest is just default boilerplate for stand-alone builds....
 #
 # (yes, "make obj" is forced -- it is stupid to build in the source directory)
+# (forcing "make depend" is also good, though a bit of a wast for pkgsrc)
 #
 # Note with "bmake" this will cause obj* directories to be created in the
 # existing obj* directories the second time around...
 #
 
-BUILDTARGETS =	bmake-do-obj bmake-do-depend
+BUILDTARGETS =	bmake-do-obj
+BUILDTARGETS +=	.WAIT
+BUILDTARGETS +=	bmake-do-depend
+BUILDTARGETS +=	.WAIT
 
 # this must be the first target
 #
