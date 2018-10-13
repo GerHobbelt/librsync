@@ -132,10 +132,13 @@ bmake_install_dirs += ${PKGCONFIGDIR}
 bmake_install_dirs += ${DEBUGDIR}
 bmake_install_dirs += ${DEBUGDIR}/${PREFIX}/bin
 bmake_install_dirs += ${DEBUGDIR}/${PREFIX}/lib
-# LINTLIBDIR could depend on MKLINT
-bmake_install_dirs += ${LINTLIBDIR}
 bmake_install_dirs += ${DOCDIR}/librsync
+# XXX at the moment, without Doxygen, we won't really need these...
+bmake_install_dirs += ${DOCDIR}/librsync/html
+bmake_install_dirs += ${DOCDIR}/librsync/latex
 bmake_install_dirs += ${MANDIR}
+bmake_install_dirs += ${MANDIR}/man1
+bmake_install_dirs += ${MANDIR}/man3
 # (in general though it is safest to always make them all)
 
 beforeinstall: _bmake_install_dirs
