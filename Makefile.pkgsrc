@@ -22,8 +22,12 @@ LICENSE=	gnu-lgpl-v2.1
 
 USE_LANGUAGES=	c
 
-MAKE_ENV+=	MAKEOBJDIRPREFIX=${WRKSRC}/build
-MAKE_ENV+=	${BSD_MAKE_ENV}
+USE_BSD_MAKEFILE=	yes
+BSD_MAKE_BUILD_DIR=	${WRKSRC}/build
+BUILD_MAKE_FLAGS=	MAKEOBJDIRPREFIX=${BSD_MAKE_BUILD_DIR}
+TEST_MAKE_FLAGS=	${BUILD_MAKE_FLAGS}
+INSTALL_MAKE_FLAGS=	${BUILD_MAKE_FLAGS}
+INSTALL_TARGET=		includes install
 
 AUTO_MKDIRS=	yes
 
@@ -78,20 +82,18 @@ post-install:
 # Makefile into your $pkgsrc/devel/librsync directory, go there, and build this
 # target:
 #
-#	cp Makefile /usr/pkgsrc/devel/librsync
+#	rm -rf build* dest*
+#	make clean
+#	cp Makefile.pkgsrc /usr/pkgsrc/net/librsync/Makefile
 #	cd /usr/pkgsrc/net/librsync
 #	make REPODIR=$OLDPWD setup-pkgsrc
 #
 REPODIR ?=	/work/woods/m-librsync
 setup-pkgsrc:
-	${RM} -f ${FILESDIR}/README
-	${RM} -f ${FILESDIR}/TODO
-	${RM} -rf ${FILESDIR}/doc
-	${RM} -rf ${FILESDIR}/src
-	${RM} -rf ${FILESDIR}/tests
-	${MKDIR} ${FILESDIR}/
-	${CP} -R ${REPODIR}/* ${FILESDIR}/
-	${RM} -rf ${FILESDIR}/build ${FILESDIR}/dist
+	find ${FILESDIR} -type d \( -name CVS -or -name .git -or -name .svn \) -prune -or -type f ! -name '.*ignore' -print0 | xargs -0 rm
+	cd ${REPODIR} && find . \( -type d \( -name debian -name CVS -or -name .git -or -name .svn -or -name build -or -name 'build-*' -or -name dest -or -name 'dest-*' \) -prune \) -or -type f ! -name '.#*' ! -name '#*#' ! -name '*~' ! -name '.*ignore' ! -name '[Tt][Aa][Gg][Ss]' -print | pax -rw ${FILESDIR}
+	mv ${FILESDIR}/Makefile.pkgsrc ${PKGDIR}/Makefile
+	mv ${FILESDIR}/PLIST.pkgsrc ${PKGDIR}/PLIST
 
 .include "../../archivers/bzip2/buildlink3.mk"
 .include "../../devel/popt/buildlink3.mk"
