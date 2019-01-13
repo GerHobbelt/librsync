@@ -98,7 +98,7 @@ TARGETS +=	docs
 # The rest is just default boilerplate for stand-alone builds....
 #
 # (yes, "make obj" is forced -- it is stupid to build in the source directory)
-# (forcing "make depend" is also good, though a bit of a wast for pkgsrc)
+# (forcing "make depend" is also good, though a bit of a waste for pkgsrc)
 #
 # Note with "bmake" this will cause obj* directories to be created in the
 # existing obj* directories the second time around...
@@ -150,7 +150,6 @@ _bmake_install_dirs: .PHONY
 .endfor
 
 .include <bsd.subdir.mk>
-
 
 #
 # Local Variables:

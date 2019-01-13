@@ -41,8 +41,8 @@ POPT_LIB =	 /usr/local/lib
 #
 # (note:  bmake puts optimizer flags in DBG)
 #
-DBG ?= -g
-OPTIM ?= -O0
+#DBG ?= -g
+#OPTIM ?= -O0
 
 NOGCCERROR = 1
 WARNS = 0
@@ -123,21 +123,24 @@ PKGCONFIGDIR ?= ${LIBDIR}/pkgconfig
 
 # xxx all this otherwise some systems won't allow unprivileged installs
 .if ${USER} != "root"
+USER_GRP !=	id -g
 BINOWN =	${USER}
-BINGRP !=	id -g
+BINGRP =	${USER_GRP}
 LIBOWN =	${USER}
-LIBGRP !=	id -g
+LIBGRP =	${USER_GRP}
 SHAREOWN =	${USER}
-SHAREGRP !=	id -g
+SHAREGRP =	${USER_GRP}
 FILESOWN =	${USER}
-FILESGRP !=	id -g
+FILESGRP =	${USER_GRP}
 NOBINMODE =	644		# else OSX bsdmake can't install!
 DEBUGOWN =	${USER}
-DEBUGGRP !=	id -g
+DEBUGGRP =	${USER_GRP}
+MANOWN =	${USER}
+MANGRP =	${USER_GRP}
 DOCOWN =	${USER}
-DOCGRP !=	id -g
+DOCGRP =	${USER_GRP}
 # xxx adapt for typo in mk-20150901 through at least mk-20170418
-DOGGRP !=	id -g
+DOGGRP =	${USER_GRP}
 .endif
 
 STRIP =		# empty (needed for OSX bsdmake install)
