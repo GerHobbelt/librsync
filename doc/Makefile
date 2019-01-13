@@ -26,7 +26,7 @@ Doxyfile: ${.CURDIR}/Doxyfile.in
 #
 DOXYGEN ?=	doxygen
 docs: .PHONY all Doxyfile
-#	env MAKEOBJDIRPREFIX=$(MAKEOBJDIRPREFIX:Q) CURDIR=${.CURDIR:Q} ${DOXYGEN} ${.CURDIR:Q}/Doxyfile
+	test ${DOXYGEN} -v >/dev/null && env MAKEOBJDIRPREFIX=$(MAKEOBJDIRPREFIX:Q) CURDIR=${.CURDIR:Q} ${DOXYGEN} ${.CURDIR:Q}/Doxyfile
 
 afterinstall: .PHONY install-docs
 
