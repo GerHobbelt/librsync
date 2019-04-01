@@ -1603,10 +1603,10 @@ COMPACT_LATEX          = YES
 # printer.
 # Possible values are: a4 (210 x 297 mm), letter (8.5 x 11 inches), legal (8.5 x
 # 14 inches) and executive (7.25 x 10.5 inches).
-# The default value is: a4.
+# The default value is: a4.  (but letter format prints on a4, but not vice versa!)
 # This tag requires that the tag GENERATE_LATEX is set to YES.
 
-PAPER_TYPE             = a4wide
+PAPER_TYPE             = letter
 
 # The EXTRA_PACKAGES tag can be used to specify one or more LaTeX package names
 # that should be included in the LaTeX output. To get the times font for
@@ -1813,6 +1813,7 @@ MAN_EXTENSION          = .3
 # MAN_EXTENSION with the initial . removed.
 # This tag requires that the tag GENERATE_MAN is set to YES.
 
+# XXX this should probably be 3librsync or something like that
 MAN_SUBDIR             =
 
 # If the MAN_LINKS tag is set to YES and doxygen generates man output, then it
