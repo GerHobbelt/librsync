@@ -21,6 +21,7 @@
 #  define _HASHTABLE_H_
 
 #  include <assert.h>
+#  include <stdint.h>
 #  include <stdlib.h>
 
 /** \file hashtable.h A generic open addressing hashtable.
