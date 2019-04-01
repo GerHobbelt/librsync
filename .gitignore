@@ -2,62 +2,8 @@
 obj/
 obj.*/
 /build/
+/build-*/
 /dist/
-
-rdiff
-*.o
-# for now this is source!
-#config.h
-*.cbp
-# for now this is source!
-#librsync-config.h
-librsync.so*
-librsync.a
-librsync*.dylib
-*.lo
-.libs
-librsync.la
-librsync-[0-9]*tar.gz
-librsync-[0-9]*/
-/m4/
-tags
+/dist-*/
 TAGS
-*.dylib
-*.la
-doc/Doxyfile
-tests/isprefix.driver
-html
-latex
-Testing
-*.user
-
-# Editor temp files
-.sw?
-.*.sw?
-*~
-
-# OSX build outputs
-*.dSYM
-
-# Test binaries
-*_test
-
-*.bak
-
-*.tmp
-
-# for rtags
-compile_commands.json
-
-# Cache sometimes leftover by Doxygen,
-# similar to https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=758975
-doxygen_sqlite3.db
-
-# Coverage reports
-*.gcov
-
-# Optional build using http://build-ninja.org
-.ninja_deps
-.ninja_log
-build.ninja
-rules.ninja
+tags
