@@ -10,6 +10,8 @@
 # XXX see SJG's SSLrsh release for simple portability hacks via Make
 # e.g. in particular the use of .-include "$Makefile.${MACHINE}.inc" etc.
 
+PACKAGE =	rsync		# n.b.:  NOT 'librsync' -- just the lib name
+
 LIBRSYNC_MAJOR =	2
 LIBRSYNC_MINOR =	0
 LIBRSYNC_MICRO =	2
@@ -20,7 +22,8 @@ CPPFLAGS +=		-DVERSION='"${LIBRSYNC_VERSION}"'
 
 # where to find libpopt and its headers...
 #
-# XXX this needs to be fixed!!!
+# XXX this could be smarter, but it works for pkgsrc and ports in the "normal"
+# places, plus Homebrew on OSX.
 #
 .if exists(/usr/pkg)
 POPT_INCLUDE =	 /usr/pkg/include
@@ -28,7 +31,7 @@ POPT_LIB =	 /usr/pkg/lib
 .elif exists(/opt/pkg)
 POPT_INCLUDE =	 /opt/pkg/include
 POPT_LIB =	 /opt/pkg/lib
-.elif
+.else
 POPT_INCLUDE =	 /usr/local/include
 POPT_LIB =	 /usr/local/lib
 .endif
@@ -75,7 +78,7 @@ WARNS = 0
 # still require adjustments after a "dist" archive is un-packed since it may not
 # have been original configured for the final installation directory).
 #
-# XXX this is, very unfortunately, project dependent!
+# XXX this is, very unfortunately, somewhat ugly and package dependent!
 #
 # program and test directories need to reference the static library, but we
 # cannot just use the portable form of "-l${LIB}_s" because LIB is not always
@@ -83,24 +86,32 @@ WARNS = 0
 #
 # see src/Makefile for where LIB is set
 #
+# So instead we refer to ${PACKAGE}, assuming it has the same name...
+#
 .if !defined(LIB)
 #
 # Handling ${.OBJDIR} both with and without use of ${MAKEOBJDIRPREFIX} is
 # tedious.
 #
 . if exists(${.OBJDIR}/${bmake_topdir}/src)
+# .OBJDIR is from MAKEOBJDIRPREFIX
 LDADD += -L${.OBJDIR}/${bmake_topdir}/src
-DPADD = ${.OBJDIR}/${bmake_topdir}/src/librsync.a
+DPADD = ${.OBJDIR}/${bmake_topdir}/src/lib${PACKAGE}.a
 . else
+# assume .OBJDIR is a local directory, so look for bmake_topdir from the parent
 LDADD += -L../${bmake_topdir}/src/${.OBJDIR:T}
-DPADD = ${.OBJDIR}/${bmake_topdir}/src/${.OBJDIR:T}/librsync.a
+DPADD = ../${bmake_topdir}/src/${.OBJDIR:T}/lib${PACKAGE}.a
 . endif
-LDADD += -lrsync_s
-.endif
+LDADD += -l${PACKAGE}_s
+#
+.endif	# !defined(LIB)
 
 # NOTICE:  Nothing below here _should_ be project dependent
 
-# yes, always -- we force this
+# yes, always -- we use this because it's safer when using a shared network
+# directory for building/testing/etc.  (though it is sometimes somewhat
+# annoying)
+#
 OBJMACHINE =	yes
 
 # N.B.:  ${DESTDIR} if set on the 'install' command line, it is also prepended
@@ -164,9 +175,9 @@ SHLIB_LDENDFILE =	# empty
 # release until 6.0.  Unfortunately there is no easy way to know definitively
 # what version of BSDMake is being used.  Simon Gerraty's bmake has
 # MAKE_VERSION, as does FreeBSD's make though they are entirely and totally
-# unrelated.  In NetBSD MAKE_VERSION was only briefly present since it
-# represented the build date, not the release date, and it was removed in order
-# to make it possible to do reproducible builds.
+# different and unrelated.  In NetBSD MAKE_VERSION was only briefly present
+# since it represented the build date, not the release date, and it was removed
+# in order to make it possible to do reproducible builds.
 #
 bmake_srcdir =	${.CURDIR}/${bmake_topdir}/src
 
@@ -181,6 +192,6 @@ CFLAGS +=	-I${bmake_srcdir}
 #
 # Local Variables:
 # eval: (make-local-variable 'compile-command)
-# compile-command: (concat "mkdir -p build; " (default-value 'compile-command) " MAKEOBJDIRPREFIX=$(pwd)/build")
+# compile-command: (concat "MAKEOBJDIRPREFIX=$(pwd)/build " (default-value 'compile-command))
 # End:
 #

@@ -3,11 +3,10 @@
 bmake_topdir = ..
 
 # this must be set first to avoid the top-level LDADD
+# (it should be the same as ${PACKAGE})
 LIB =	rsync
 
 .include "${.CURDIR}/${bmake_topdir}/Makefile.inc"
-
-.include <bsd.own.mk>
 
 # If these are set blank then no shared library is built, and so on OSX even
 # Pkgsrc bmake can then complete a successful build.
@@ -27,7 +26,7 @@ CFLAGS +=	-I${.CURDIR}/blake2
 INCS += librsync.h
 
 SRCS +=	base64.c
-SRCS +=	blake2/blake2b-ref.c
+SRCS +=	blake2b-ref.c
 SRCS +=	buf.c
 SRCS +=	checksum.c
 SRCS +=	command.c
@@ -102,10 +101,19 @@ librsync.pc: ${.CURDIR}/librsync.pc.in
 librsync.pc: ${.CURDIR}/Makefile
 librsync.pc: ${.CURDIR}/${bmake_topdir}/Makefile.inc
 
-beforedepend: ${.OBJDIR}/blake2
+# FILES are not't automatically added on OSX/Darwin, FreeBSD, etc.
+#
+CLEANFILES += librsync.pc
 
-${.OBJDIR}/blake2:
-	mkdir ${.TARGET}
+# NetBSD make has a wee hack which allows one to include a sub-directory
+# pathname part in the source file given in SRCS and have the object file be
+# created in that same subdir.  However this is not portable and so to avoid
+# complication we'll just copy the source from its subdir and build from that.
+#
+blake2b-ref.c: ${.CURDIR}/blake2/blake2b-ref.c
+	cp ${.CURDIR}/blake2/blake2b-ref.c ${.TARGET}
+
+CLEANFILES += blake2b-ref.c
 
 # here we do a little trick to pre-create a symlink to a unique name for the
 # static library so that on systems which don't allow full static linking, but
@@ -119,7 +127,7 @@ ${.OBJDIR}/blake2:
 # intermediate dependency had action rules, then it would become a target, phony
 # or not.
 #
-# Note also this makes the link before the libary may exist.
+# Note also this makes the link before the library may exist.
 #
 afterdepend: _bmake_static_lib_build_symlink
 afterinstall: _bmake_static_lib_install_symlink

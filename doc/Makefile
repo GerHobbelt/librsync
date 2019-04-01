@@ -1,4 +1,4 @@
-# -*-makefile-bsdmake-*-
+# -*- makefile-bsdmake -*-
 
 bmake_topdir = ..
 
@@ -16,6 +16,8 @@ Doxyfile: ${.CURDIR}/Doxyfile.in
 	    -e 's|@LIBDIR@|${LIBDIR}|' \
 	< ${.CURDIR}/Doxyfile.in > ${.TARGET}
 
+CLEANFILES += Doxyfile
+
 # If you have "doxygen" installed then this creates 'html', 'latex-, and 'man'
 # sub-directories with generated documentation.
 #
@@ -26,18 +28,23 @@ Doxyfile: ${.CURDIR}/Doxyfile.in
 #
 DOXYGEN ?=	doxygen
 docs: .PHONY all Doxyfile
-	test ${DOXYGEN} -v >/dev/null && env MAKEOBJDIRPREFIX=$(MAKEOBJDIRPREFIX:Q) CURDIR=${.CURDIR:Q} ${DOXYGEN} ${.CURDIR:Q}/Doxyfile
+	${DOXYGEN} -v >/dev/null && env MAKEOBJDIRPREFIX=$(MAKEOBJDIRPREFIX:Q) CURDIR=${.CURDIR:Q} ${DOXYGEN} Doxyfile
 
 afterinstall: .PHONY install-docs
 
 install-docs: .PHONY beforeinstall .WAIT docs
-	cp ${.CURDIR:Q}/../AUTHORS ${.CURDIR:Q}/../CONTRIBUTING.md ${.CURDIR:Q}/../COPYING ${.CURDIR:Q}/../NEWS.md ${.CURDIR:Q}/../README.md ${.CURDIR:Q}/../THANKS ${.CURDIR:Q}/../TODO.md ${DESTDIR}${SHAREDIR}/doc/librsync/
-	-cp -R $(MAKEOBJDIRPREFIX:Q)/html ${DESTDIR}${SHAREDIR}/doc/librsync/
-	-cp -R $(MAKEOBJDIRPREFIX:Q)/latex ${DESTDIR}${SHAREDIR}/doc/librsync/
-	-cp -R $(MAKEOBJDIRPREFIX:Q)/man ${DESTDIR}${SHAREDIR}/
+	cp ${.CURDIR:Q}/../AUTHORS ${.CURDIR:Q}/../CONTRIBUTING.md ${.CURDIR:Q}/../COPYING ${.CURDIR:Q}/../NEWS.md ${.CURDIR:Q}/../README.md ${.CURDIR:Q}/../THANKS ${.CURDIR:Q}/../TODO.md ${DESTDIR}${SHAREDIR}/doc/lib${PACKAGE}/
+	-cp -R html ${DESTDIR}${SHAREDIR}/doc/lib${PACKAGE}/
+	-cp -R latex ${DESTDIR}${SHAREDIR}/doc/lib${PACKAGE}/
+	-cp -R man ${DESTDIR}${SHAREDIR}/
 
 MAN =	rdiff.1
 MAN +=	librsync.3
+
+# XXX FreeBSD seems to have a buggy <bsd.man.mk> (as of 12.0)
+#
+CLEANFILES += rdiff.1.gz
+CLEANFILES += librsync.3.gz
 
 .include <bsd.prog.mk>
 .include "${.CURDIR}/${bmake_topdir}/Makefile.compiler"

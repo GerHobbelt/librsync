@@ -4,7 +4,11 @@ bmake_topdir = ..
 
 .include "${.CURDIR}/${bmake_topdir}/Makefile.inc"
 
-# XXX Apple's BSDmake, Simon's BSDmake, etc., don't support PROGS
+# XXX Simon's Bmake doesn't support PROGS
+# (It has just singular PROG -- one program per directory, sigh.  Poop!)
+# XXX FreeBSD has <bsd.progs.mk>, and though it does silly things, it works.
+
+# XXX we should move each program to its own source directory
 
 PROGS += isprefix_test
 proginstall-isprefix_test: .PHONY
@@ -26,38 +30,49 @@ proginstall-sumset_test: .PHONY
 SRCS.sumset_test = sumset_test.c
 MAN.sumset_test =	# empty
 
-# XXX this should be built in its own top-level sub-directory
-# XXX and then it could be linked to here for running the tests...
+# XXX this REALLY should be built in its own top-level sub-directory and
+# then it could be linked to here for running the tests...
 PROGS += rdiff
-SRCS.rdiff = ../src/rdiff.c
+SRCS.rdiff = rdiff.c
+MAN.rdiff =		#empty
+
+rdiff.c: ${.CURDIR}/../src/rdiff.c
+	cp ${.CURDIR}/../src/rdiff.c ${.TARGET}
+CLEANFILES += rdiff.c
+
 .if defined(POPT_INCLUDE)
 .if defined(CPPFLAGS)
-CPPFLAGS.rdiff +=	-I${POPT_INCLUDE}
+CPPFLAGS +=	-I${POPT_INCLUDE}
 .else
-CFLAGS.rdiff +=		-I${POPT_INCLUDE}
+CFLAGS +=	-I${POPT_INCLUDE}
 .endif
 .endif
 .if defined(INTL_INCLUDE)
 .if defined(CPPFLAGS)
-CPPFLAGS.rdiff +=	-I${INTL_INCLUDE}
+CPPFLAGS +=	-I${INTL_INCLUDE}
 .else
-CFLAGS.rdiff +=		-I${INTL_INCLUDE}
+CFLAGS +=	-I${INTL_INCLUDE}
 .endif
 .endif
 .if defined(POPT_LIB)
-LDADD.rdiff = -L${POPT_LIB}
+LDADD.rdiff =	-L${POPT_LIB}
 .endif
 .if defined(INTL_LIB)
-LDADD.rdiff += -L${INTL_LIB}
+LDADD.rdiff +=	-L${INTL_LIB}
 .endif
-LDADD.rdiff += -lpopt -lintl
-MAN.rdiff =		#empty
+LDADD.rdiff +=	-lpopt -lintl
 
-regress: .PHONY all
+# ancient BSDMake required the left hand term to be a variable expansion in
+# order for a string comparison to be done...  (and the iterator from a .for
+# loop is not really a variable for this use)
+#
+_OLDBMAKE_HACK = rdiff
+
+regress: .PHONY all ${PROGS}
 .for _P in ${PROGS}
-.if "${_P}" != "rdiff"
-	./${_P}
-.endif
+. if ${_OLDBMAKE_HACK} != ${_P}
+	./${_P:Q}
+. endif
 .endfor
 	sh ${.CURDIR}/rdiff_bad_option.sh
 	sh ${.CURDIR}/help.test
@@ -68,6 +83,13 @@ regress: .PHONY all
 	sh ${.CURDIR}/delta.test
 	sh ${.CURDIR}/changes.test
 	sh ${.CURDIR}/largefile.test
+	@echo "All tests completed A-OK!"
 
-.include <bsd.prog.mk>
+# XXX this works for newer FreeBSDs at least
+.if defined(.FreeBSD) && (${.FreeBSD} == true)
+. include <bsd.progs.mk>
+.else
+. include <bsd.prog.mk>
+.endif
+
 .include "${.CURDIR}/${bmake_topdir}/Makefile.compiler"
