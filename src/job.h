@@ -19,10 +19,14 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/** \file job.h
+ *
+ * Internal job management API. */
+
 #include "mdfour.h"
 #include "rollsum.h"
 
-/** \struct rs_job The contents of this structure are private. */
+/** The contents of this structure are private. */
 struct rs_job {
     int dogtag;
 

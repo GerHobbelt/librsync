@@ -80,7 +80,7 @@ enum {
     RS_LOG_NONAME = 8           /**< \b Don't show function name in message. */
 };
 
-/** \macro rs_trace_enabled()
+/** \def rs_trace_enabled()
  *
  * Call this before putting too much effort into generating trace messages. */
 
